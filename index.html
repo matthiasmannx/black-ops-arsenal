@@ -214,7 +214,8 @@
   .sysnote p{font-family:var(--mono);font-size:13px;line-height:1.65;color:var(--ink-2);margin:0}
   .app[data-active="bo2"] .sysnote p{font-family:var(--sans);font-size:13.5px}
   .sysnote b{color:var(--ink)}
-  footer{position:relative;z-index:3;margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.75}
+  footer{position:relative;z-index:3;margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.75;text-align:center}
+  footer .credit{font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px}
 
   /* ===== BUILDER MODAL ===== */
   .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto}
@@ -323,10 +324,9 @@
     </div>
 
     <div class="grid" id="grid"></div>
-    <section class="sysnote" id="sysnote"></section>
     <footer>
-      Data compiled from community sources: Call of Duty Wiki tier lists, Reddit (r/blackops, r/blackops2), GameFAQs boards, Steam class guides &amp; YouTube meta guides.<br>
-      Weapon images: drop photos in <b>assets/weapons/&lt;game&gt;/&lt;slug&gt;.png</b> (e.g. assets/weapons/bo1/galil.png). Without a photo a stylised silhouette is shown. Tiers reflect recurring consensus, not absolute truth. · Updated: 10 July 2026.
+      <div class="credit">Designed &amp; developed by <span class="author-name">Matthias Mann</span></div>
+      Data compiled from community sources: Call of Duty Wiki tier lists, Reddit (r/blackops, r/blackops2), GameFAQs boards, Steam class guides &amp; YouTube meta guides. · Tiers reflect recurring consensus, not absolute truth. · Updated: 10 July 2026.
     </footer>
   </div>
 
@@ -710,7 +710,7 @@ function renderPerks(){
 }
 
 function updateSysnote(){
-  const el=document.getElementById("sysnote"),c=COPY[state.game];
+  const el=document.getElementById("sysnote");if(!el)return;const c=COPY[state.game];
   if(state.mode==="perks"){
     el.innerHTML=state.game==="bo1"
       ? `<h3>Pro Perks — BO1</h3><p>Each perk gains a <b>second effect (Pro)</b> once you complete its in-game challenges. Every tile below shows the base ability plus the Pro ability and how to unlock it.</p>`
