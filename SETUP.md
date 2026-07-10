@@ -11,31 +11,9 @@ database. We use **Supabase** (free tier, no credit card). Do this once:
 
 ## 2. Create the table (copy-paste SQL)
 1. In the left menu open **SQL Editor** → **New query**.
-2. Paste this and click **Run**:
-
-```sql
-create table if not exists public.loadouts (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz default now(),
-  game text not null,
-  weapon text not null,
-  author text not null,
-  title text not null,
-  attachments jsonb not null default '[]',
-  perks jsonb not null default '[]'
-);
-
-alter table public.loadouts enable row level security;
-
-create policy "public read"   on public.loadouts
-  for select to anon using (true);
-
-create policy "public insert" on public.loadouts
-  for insert to anon with check (
-    char_length(author) between 1 and 24 and
-    char_length(title)  between 1 and 40
-  );
-```
+2. Paste the SQL from the file `supabase-schema.sql` (in this project folder) and
+   click **Run**. IMPORTANT: paste only the SQL — do NOT include any ``` backticks.
+   You should see "Success. No rows returned".
 
 This lets anyone **read** all builds and **add** a build (with basic length checks),
 but nobody can edit or delete others' builds.

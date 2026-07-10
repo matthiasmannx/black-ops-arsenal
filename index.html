@@ -167,8 +167,25 @@
   .mybuild-bar[hidden]{display:none}
   .mybuild-bar b{color:var(--accent)}
   .mybuild-bar button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--bg-deep);border:0;padding:7px 12px;cursor:pointer;font-weight:700}
-  .mybuild-tag{color:var(--ink-3);margin-left:8px}
   .author-name{color:var(--accent);font-weight:700;letter-spacing:.04em}
+  .cbuild-count{color:var(--accent)}
+  .community{display:flex;flex-direction:column;gap:8px}
+  .cbuild{border:1px solid var(--line-2);background:var(--panel-2);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .app[data-active="bo2"] .cbuild{clip-path:polygon(0 0,100% 0,100% 100%,8px 100%,0 calc(100% - 8px))}
+  .cbuild-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+  .cbuild-head b{color:var(--ink)}
+  .cvote{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--line-2);color:var(--ink-2);padding:4px 9px;cursor:pointer;font-weight:700;line-height:1}
+  .cvote:hover{border-color:var(--accent);color:var(--accent)}
+  .cvote.voted{background:var(--accent);color:var(--bg-deep);border-color:var(--accent);cursor:default}
+  .cbuild-show{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:transparent;color:var(--accent);border:1px solid var(--accent);padding:5px 10px;cursor:pointer}
+  .cbuild-show:hover{background:var(--accent);color:var(--bg-deep)}
+  .cbuild-tags{display:flex;flex-wrap:wrap;gap:6px}
+  .cbuild-empty{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  #ppalette{flex-direction:column;flex-wrap:nowrap;gap:11px;align-items:stretch}
+  .pgroup{display:flex;flex-direction:column;gap:6px}
+  .pgroup-label{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px}
+  .pgroup-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .pgroup-items{display:flex;flex-wrap:wrap;gap:8px}
   .pslots .slot{min-width:0;max-width:none}
   .saveform{padding:16px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
   .saveform[hidden]{display:none}
@@ -320,7 +337,6 @@
       </div>
       <div class="m-body">
         <div class="author-line" id="authorLine"></div>
-        <div class="mybuild-bar" id="myBuildBar" hidden></div>
         <div class="buildzone" id="buildzone">
           <div class="bz-media" id="bzSil"></div>
           <div class="slots" id="slots"></div>
@@ -334,6 +350,10 @@
           <div class="pal-label">Perks — drag or tap into the right slot</div>
           <div class="slots pslots" id="pslots" style="margin-top:10px"></div>
           <div class="palette" id="ppalette" style="margin-top:10px"></div>
+        </div>
+        <div id="communityWrap">
+          <div class="pal-label">Community builds — by players</div>
+          <div class="community" id="communityList" style="margin-top:10px"></div>
         </div>
       </div>
       <div class="saveform" id="saveForm" hidden>
@@ -546,6 +566,32 @@ const app=document.getElementById("app"),grid=document.getElementById("grid"),ca
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const perkSlot=(g,name)=>{const p=PERKS[g].find(x=>x.name===name);return p?p.slot:9;};
+const SUPA_URL="https://mbuusvrddzloutwxywqj.supabase.co";
+const SUPA_KEY="sb_publishable_WWznksdeKZRiJytNtLBSrQ_nEI65d2s";
+const SHARED=!!(SUPA_URL&&SUPA_KEY);
+let COMMUNITY={};
+async function supaFetch(path,opts={}){
+  const r=await fetch(SUPA_URL+"/rest/v1/"+path,{...opts,headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY,"Content-Type":"application/json",...(opts.headers||{})}});
+  if(!r.ok)throw new Error("supabase "+r.status);
+  const t=await r.text();
+  return t?JSON.parse(t):null;
+}
+async function loadCommunity(){
+  if(!SHARED)return;
+  try{const rows=await supaFetch("loadouts?select=*&order=created_at.asc");COMMUNITY={};rows.forEach(r=>{const k=r.game+":"+r.weapon;(COMMUNITY[k]=COMMUNITY[k]||[]).push(r);});}
+  catch(e){console.warn("community load failed",e);}
+}
+const communityFor=w=>COMMUNITY[w.g+":"+w.name]||[];
+let VOTED=new Set();
+try{VOTED=new Set(JSON.parse(localStorage.getItem("bo-voted")||"[]"));}catch(e){}
+const hasVoted=id=>VOTED.has(id);
+async function upvote(b){
+  if(!b.id||hasVoted(b.id))return;
+  VOTED.add(b.id);try{localStorage.setItem("bo-voted",JSON.stringify([...VOTED]));}catch(e){}
+  b.votes=(b.votes||0)+1;renderCommunity();
+  try{await supaFetch("rpc/upvote",{method:"POST",body:JSON.stringify({build_id:b.id})});}
+  catch(e){console.warn("upvote failed",e);}
+}
 const imgPath=w=>`assets/weapons/${w.g}/${slug(w.name)}.png`;
 
 // custom loadouts store
@@ -610,7 +656,6 @@ function render(){
   countEl.innerHTML=`<b>${VIEW.length}</b>/${total}`;
   if(!VIEW.length){grid.innerHTML=`<div class="empty">// No weapons found — adjust your filters.</div>`;return;}
   grid.innerHTML=VIEW.map((w,i)=>{
-    const mine=isCustom(w);
     return `<article class="card ${w.tier.toLowerCase()}">
       <div class="plate"><div class="grid-tex"></div><div class="sil-wrap">${SIL[w.cat]||SIL["Special"]}</div><img class="wimg" src="${imgPath(w)}" alt="${esc(w.name)}" loading="lazy" onload="this.parentElement.classList.add('has-img');this.previousElementSibling.style.display='none'" onerror="this.remove()"></div>
       <div class="body">
@@ -627,7 +672,7 @@ function render(){
           <div class="tags">${w.perks.slice().sort((a,b)=>perkSlot(w.g,a)-perkSlot(w.g,b)).map(p=>`<span class="tag perk">${esc(p)}</span>`).join("")}</div>
         </div>
         <p class="reason">${esc(w.why)}</p>
-        <div class="byline">◇ Meta by <span class="author-name">${esc(META_AUTHOR)}</span>${mine?`<span class="mybuild-tag">★ your build “${esc(loadoutTitle(w))}” by <span class="author-name">${esc(loadoutAuthor(w))}</span></span>`:""}</div>
+        <div class="byline">◇ Meta by <span class="author-name">${esc(META_AUTHOR)}</span>${communityFor(w).length?` · <span class="cbuild-count">▣ ${communityFor(w).length} community build${communityFor(w).length>1?"s":""}</span>`:""}</div>
         <button class="edit-btn" data-idx="${i}">⚙ Edit loadout</button>
       </div>
     </article>`;
@@ -685,17 +730,14 @@ function openBuilder(w){
   document.getElementById("mTitle").textContent=w.name;
   document.getElementById("mSub").textContent=w.cat+" · "+(w.g==="bo1"?"Black Ops":"Black Ops II");
   document.getElementById("authorLine").innerHTML=`Meta loadout · created by <b>${esc(META_AUTHOR)}</b>`;
-  {const mb=document.getElementById("myBuildBar"),e=entryOf(w);
-   if(e){mb.hidden=false;mb.innerHTML=`<span>You have a saved build: <b>${esc(e.title)}</b> by ${esc(e.author)}</span><button id="loadMine">Show build</button>`;}
-   else{mb.hidden=true;mb.innerHTML="";}}
   document.getElementById("bzSil").innerHTML=(SIL[w.cat]||SIL["Special"]).replace('class="__C"','class="bz-sil"')+`<img class="bz-img" src="${imgPath(w)}" alt="" onload="this.previousElementSibling.style.display='none'" onerror="this.remove()">`;
   document.getElementById("mHint").innerHTML=w.g==="bo1"
     ? "BO1: 1 attachment by default. Enable <b>Warlord</b> for a 2nd slot. Drag an attachment onto a slot, or tap it. Tap a filled slot to remove it."
     : "BO2 · Pick 10: 2 attachments by default. Enable <b>Gunfighter</b> for a 3rd slot. Drag an attachment onto a slot, or tap it. Tap a filled slot to remove it.";
   document.getElementById("saveForm").hidden=true;document.getElementById("mActions").hidden=false;
   document.getElementById("uName").value="";document.getElementById("uTitle").value="";document.getElementById("sfErr").textContent="";
-  renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
-  const _lm=document.getElementById("loadMine");if(_lm)_lm.onclick=loadMine;
+  {const cs=document.getElementById("mConfirmSave");cs.disabled=false;cs.textContent="Save";}
+  renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();renderCommunity();
   overlay.classList.add("open");
 }
 function closeBuilder(){overlay.classList.remove("open");BW=null;}
@@ -705,6 +747,31 @@ function loadMine(){
   if(BSLOTS.length>BASE_SLOTS[BW.g]){BWILD=true;BMAX=WILD[BW.g].max;}else{BWILD=false;BMAX=BASE_SLOTS[BW.g];}
   BPERKS=(e.perks||[]).slice();
   document.getElementById("authorLine").innerHTML=`Your build · <b>${esc(e.title)}</b> by ${esc(e.author)}`;
+  renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
+}
+function renderCommunity(){
+  const el=document.getElementById("communityList");
+  if(!SHARED){el.innerHTML=`<div class="cbuild-empty">Sharing is off.</div>`;return;}
+  const list=communityFor(BW).slice().sort((a,b)=>(b.votes||0)-(a.votes||0)||(a.created_at||"").localeCompare(b.created_at||""));
+  if(!list.length){el.innerHTML=`<div class="cbuild-empty">No community builds yet — save yours to be the first.</div>`;return;}
+  el.innerHTML=list.map((b,i)=>`
+    <div class="cbuild">
+      <div class="cbuild-head">
+        <button class="cvote${hasVoted(b.id)?" voted":""}" data-i="${i}" title="Upvote if this build is good">▲ <span>${b.votes||0}</span></button>
+        <span class="author-name">${esc(b.author)}</span> · <b>${esc(b.title)}</b>
+        <button class="cbuild-show" data-i="${i}">Show build</button>
+      </div>
+      <div class="cbuild-tags">${(b.attachments||[]).map(a=>`<span class="tag att">${esc(a)}</span>`).join("")}${(b.perks||[]).slice().sort((x,y)=>perkSlot(BW.g,x)-perkSlot(BW.g,y)).map(p=>`<span class="tag perk">${esc(p)}</span>`).join("")}</div>
+    </div>`).join("");
+  el.querySelectorAll(".cbuild-show").forEach(btn=>btn.onclick=()=>showCommunity(list[+btn.dataset.i]));
+  el.querySelectorAll(".cvote").forEach(btn=>btn.onclick=()=>upvote(list[+btn.dataset.i]));
+}
+function showCommunity(b){
+  const avail=attFor(BW);
+  BSLOTS=(b.attachments||[]).filter(a=>avail.includes(a)).slice(0,WILD[BW.g].max);
+  if(BSLOTS.length>BASE_SLOTS[BW.g]){BWILD=true;BMAX=WILD[BW.g].max;}else{BWILD=false;BMAX=BASE_SLOTS[BW.g];}
+  BPERKS=(b.perks||[]).slice();
+  document.getElementById("authorLine").innerHTML=`Build by <span class="author-name">${esc(b.author)}</span> · <b>${esc(b.title)}</b>`;
   renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
 }
 
@@ -772,23 +839,31 @@ function addPerk(name){
   BPERKS.push(name);renderPerkSlots();renderPerkPalette();
 }
 function renderPerkPalette(){
-  const el=document.getElementById("ppalette");el.innerHTML="";
-  PERKS[BW.g].forEach(pk=>{
-    const it=document.createElement("div");
-    it.className="palitem"+(BPERKS.includes(pk.name)?" used":"");
-    it.textContent=pk.name+" · "+pk.slot;it.draggable=true;
-    it.addEventListener("dragstart",ev=>ev.dataTransfer.setData("text/plain",pk.name));
-    it.onclick=()=>addPerk(pk.name);
-    el.appendChild(it);
+  const el=document.getElementById("ppalette");
+  el.innerHTML=[1,2,3].map(sl=>`
+    <div class="pgroup">
+      <div class="pgroup-label">Perk slot ${sl}</div>
+      <div class="pgroup-items">${PERKS[BW.g].filter(p=>p.slot===sl).map(pk=>`<span class="palitem${BPERKS.includes(pk.name)?" used":""}" draggable="true" data-n="${esc(pk.name)}">${esc(pk.name)}</span>`).join("")}</div>
+    </div>`).join("");
+  el.querySelectorAll(".palitem").forEach(it=>{
+    it.addEventListener("dragstart",ev=>ev.dataTransfer.setData("text/plain",it.dataset.n));
+    it.onclick=()=>addPerk(it.dataset.n);
   });
 }
 document.getElementById("mSave").onclick=()=>{document.getElementById("mActions").hidden=true;document.getElementById("saveForm").hidden=false;document.getElementById("uName").focus();};
 document.getElementById("mCancelSave").onclick=()=>{document.getElementById("saveForm").hidden=true;document.getElementById("mActions").hidden=false;};
-document.getElementById("mConfirmSave").onclick=()=>{
+document.getElementById("mConfirmSave").onclick=async ()=>{
   const name=document.getElementById("uName").value.trim(),title=document.getElementById("uTitle").value.trim();
-  if(!name||!title){document.getElementById("sfErr").textContent="Please enter both your name and a loadout title.";return;}
-  CUSTOM[keyOf(BW)]={att:BSLOTS.slice(),perks:BPERKS.slice(),author:name,title:title};
-  saveStore();closeBuilder();render();
+  const err=document.getElementById("sfErr");
+  if(!name||!title){err.textContent="Please enter both your name and a loadout title.";return;}
+  const btn=document.getElementById("mConfirmSave");btn.disabled=true;btn.textContent="Saving…";
+  try{
+    if(SHARED){
+      await supaFetch("loadouts",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({game:BW.g,weapon:BW.name,author:name,title:title,attachments:BSLOTS.slice(),perks:BPERKS.slice()})});
+      await loadCommunity();
+    }else{CUSTOM[keyOf(BW)]={att:BSLOTS.slice(),perks:BPERKS.slice(),author:name,title:title};saveStore();}
+    closeBuilder();render();
+  }catch(e){err.textContent="Saving failed — check your connection and try again.";btn.disabled=false;btn.textContent="Save";}
 };
 document.getElementById("mReset").onclick=()=>{BSLOTS=[];BPERKS=[];renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();};
 document.getElementById("mRecommend").onclick=()=>{
@@ -814,6 +889,7 @@ document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{
 document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.toLowerCase().trim();render();});
 
 setGame("bo1");
+loadCommunity().then(()=>render());
 </script>
 </body>
 </html>
