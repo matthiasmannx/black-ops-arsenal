@@ -163,6 +163,12 @@
   /* builder: author line + perk slots + save form */
   .author-line{font-family:var(--mono);font-size:11px;color:var(--ink-2);border:1px solid var(--line-2);background:var(--panel-2);padding:8px 12px}
   .author-line b{color:var(--accent)}
+  .mybuild-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--ink-2);border:1px solid var(--line-2);background:color-mix(in srgb,var(--accent) 8%,var(--panel-2));padding:8px 12px}
+  .mybuild-bar[hidden]{display:none}
+  .mybuild-bar b{color:var(--accent)}
+  .mybuild-bar button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--bg-deep);border:0;padding:7px 12px;cursor:pointer;font-weight:700}
+  .mybuild-tag{color:var(--ink-3);margin-left:8px}
+  .author-name{color:var(--accent);font-weight:700;letter-spacing:.04em}
   .pslots .slot{min-width:0;max-width:none}
   .saveform{padding:16px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
   .saveform[hidden]{display:none}
@@ -314,6 +320,7 @@
       </div>
       <div class="m-body">
         <div class="author-line" id="authorLine"></div>
+        <div class="mybuild-bar" id="myBuildBar" hidden></div>
         <div class="buildzone" id="buildzone">
           <div class="bz-media" id="bzSil"></div>
           <div class="slots" id="slots"></div>
@@ -538,6 +545,7 @@ let state={game:"bo1",mode:"weapons",cat:"all",q:""};
 const app=document.getElementById("app"),grid=document.getElementById("grid"),catsEl=document.getElementById("cats"),countEl=document.getElementById("count");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const perkSlot=(g,name)=>{const p=PERKS[g].find(x=>x.name===name);return p?p.slot:9;};
 const imgPath=w=>`assets/weapons/${w.g}/${slug(w.name)}.png`;
 
 // custom loadouts store
@@ -594,7 +602,7 @@ function render(){
   VIEW=WEAPONS.filter(w=>{
     if(w.g!==state.game)return false;
     if(state.cat!=="all"&&w.cat!==state.cat)return false;
-    if(state.q){const hay=(w.name+" "+w.cat+" "+loadoutAtt(w).join(" ")+" "+loadoutPerks(w).join(" ")+" "+loadoutAuthor(w)+" "+w.tier).toLowerCase();if(!hay.includes(state.q))return false;}
+    if(state.q){const hay=(w.name+" "+w.cat+" "+w.att.join(" ")+" "+w.perks.join(" ")+" "+w.tier).toLowerCase();if(!hay.includes(state.q))return false;}
     return true;
   });
   VIEW.sort((a,b)=>TIER_ORDER[a.tier]-TIER_ORDER[b.tier]||a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
@@ -602,7 +610,7 @@ function render(){
   countEl.innerHTML=`<b>${VIEW.length}</b>/${total}`;
   if(!VIEW.length){grid.innerHTML=`<div class="empty">// No weapons found — adjust your filters.</div>`;return;}
   grid.innerHTML=VIEW.map((w,i)=>{
-    const att=loadoutAtt(w),perks=loadoutPerks(w),mine=isCustom(w);
+    const mine=isCustom(w);
     return `<article class="card ${w.tier.toLowerCase()}">
       <div class="plate"><div class="grid-tex"></div><div class="sil-wrap">${SIL[w.cat]||SIL["Special"]}</div><img class="wimg" src="${imgPath(w)}" alt="${esc(w.name)}" loading="lazy" onload="this.parentElement.classList.add('has-img');this.previousElementSibling.style.display='none'" onerror="this.remove()"></div>
       <div class="body">
@@ -611,15 +619,15 @@ function render(){
           <div class="tier" title="Tier ${w.tier}">${w.tier}<small>TIER</small></div>
         </div>
         <div class="block">
-          <div class="b-label">${mine?esc(loadoutTitle(w)):"Recommended attachments"}${mine?'<span class="mine">YOURS</span>':""}</div>
-          <div class="tags">${att.length?att.map(a=>`<span class="tag att">${esc(a)}</span>`).join(""):`<span class="tag" style="opacity:.6">No attachments</span>`}</div>
+          <div class="b-label">Recommended attachments</div>
+          <div class="tags">${w.att.length?w.att.map(a=>`<span class="tag att">${esc(a)}</span>`).join(""):`<span class="tag" style="opacity:.6">No attachments</span>`}</div>
         </div>
         <div class="block">
           <div class="b-label">Loadout · Perks</div>
-          <div class="tags">${perks.map(p=>`<span class="tag perk">${esc(p)}</span>`).join("")}</div>
+          <div class="tags">${w.perks.slice().sort((a,b)=>perkSlot(w.g,a)-perkSlot(w.g,b)).map(p=>`<span class="tag perk">${esc(p)}</span>`).join("")}</div>
         </div>
         <p class="reason">${esc(w.why)}</p>
-        <div class="byline">◇ ${mine?"by "+esc(loadoutAuthor(w)):"Meta · "+esc(META_AUTHOR)}</div>
+        <div class="byline">◇ Meta by <span class="author-name">${esc(META_AUTHOR)}</span>${mine?`<span class="mybuild-tag">★ your build “${esc(loadoutTitle(w))}” by <span class="author-name">${esc(loadoutAuthor(w))}</span></span>`:""}</div>
         <button class="edit-btn" data-idx="${i}">⚙ Edit loadout</button>
       </div>
     </article>`;
@@ -671,12 +679,15 @@ let BW=null,BSLOTS=[],BPERKS=[],BMAX=1,BWILD=false;
 function openBuilder(w){
   BW=w;BWILD=false;BMAX=BASE_SLOTS[w.g];
   const avail=attFor(w);
-  BSLOTS=loadoutAtt(w).filter(a=>avail.includes(a)).slice(0,WILD[w.g].max);
+  BSLOTS=w.att.filter(a=>avail.includes(a)).slice(0,WILD[w.g].max);
   if(BSLOTS.length>BASE_SLOTS[w.g]){BWILD=true;BMAX=WILD[w.g].max;}
-  BPERKS=loadoutPerks(w).slice();
+  BPERKS=w.perks.slice();
   document.getElementById("mTitle").textContent=w.name;
   document.getElementById("mSub").textContent=w.cat+" · "+(w.g==="bo1"?"Black Ops":"Black Ops II");
-  document.getElementById("authorLine").innerHTML=`Created by <b>${esc(loadoutAuthor(w))}</b> · <span>${esc(loadoutTitle(w))}</span>`;
+  document.getElementById("authorLine").innerHTML=`Meta loadout · created by <b>${esc(META_AUTHOR)}</b>`;
+  {const mb=document.getElementById("myBuildBar"),e=entryOf(w);
+   if(e){mb.hidden=false;mb.innerHTML=`<span>You have a saved build: <b>${esc(e.title)}</b> by ${esc(e.author)}</span><button id="loadMine">Load my build</button>`;}
+   else{mb.hidden=true;mb.innerHTML="";}}
   document.getElementById("bzSil").innerHTML=(SIL[w.cat]||SIL["Special"]).replace('class="__C"','class="bz-sil"')+`<img class="bz-img" src="${imgPath(w)}" alt="" onload="this.previousElementSibling.style.display='none'" onerror="this.remove()">`;
   document.getElementById("mHint").innerHTML=w.g==="bo1"
     ? "BO1: 1 attachment by default. Enable <b>Warlord</b> for a 2nd slot. Drag an attachment onto a slot, or tap it. Tap a filled slot to remove it."
@@ -684,9 +695,18 @@ function openBuilder(w){
   document.getElementById("saveForm").hidden=true;document.getElementById("mActions").hidden=false;
   document.getElementById("uName").value="";document.getElementById("uTitle").value="";document.getElementById("sfErr").textContent="";
   renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
+  const _lm=document.getElementById("loadMine");if(_lm)_lm.onclick=loadMine;
   overlay.classList.add("open");
 }
 function closeBuilder(){overlay.classList.remove("open");BW=null;}
+function loadMine(){
+  const e=entryOf(BW);if(!e)return;const avail=attFor(BW);
+  BSLOTS=(e.att||[]).filter(a=>avail.includes(a)).slice(0,WILD[BW.g].max);
+  if(BSLOTS.length>BASE_SLOTS[BW.g]){BWILD=true;BMAX=WILD[BW.g].max;}else{BWILD=false;BMAX=BASE_SLOTS[BW.g];}
+  BPERKS=(e.perks||[]).slice();
+  document.getElementById("authorLine").innerHTML=`Your build · <b>${esc(e.title)}</b> by ${esc(e.author)}`;
+  renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
+}
 
 function renderWild(){
   const w=WILD[BW.g],row=document.getElementById("wildRow");
@@ -777,6 +797,7 @@ document.getElementById("mRecommend").onclick=()=>{
   if(BSLOTS.length>BASE_SLOTS[BW.g]){BWILD=true;BMAX=WILD[BW.g].max;}else{BWILD=false;BMAX=BASE_SLOTS[BW.g];}
   if(BSLOTS.length>BMAX)BSLOTS=BSLOTS.slice(0,BMAX);
   BPERKS=BW.perks.slice();
+  document.getElementById("authorLine").innerHTML=`Meta loadout · created by <b>${esc(META_AUTHOR)}</b>`;
   renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
 };
 document.getElementById("mClose").onclick=closeBuilder;
