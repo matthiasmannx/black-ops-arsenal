@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Black Ops Arsenal — BO1 &amp; BO2 Loadouts</title>
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0}
+
+  .app{min-height:100vh;transition:background-color .5s ease,color .5s ease;font-synthesis:none;
+    --bg:#0c0e0c;--bg-deep:#050605;--panel:#14160f;--panel-2:#1c1e15;
+    --line:#2e3225;--line-2:#474b38;--ink:#ece7d6;--ink-2:#aca890;--ink-3:#6d6b57;
+    --accent:#c9a24b;--accent-2:#8caf74;
+    --s:#cbb24e;--a:#79955a;--b:#6f8f9c;--c:#8a8570;
+    --sans:"Helvetica Neue",Arial,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --cond:"Helvetica Neue Condensed","Arial Narrow",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  .app[data-active="bo2"]{
+    --bg:#050a12;--bg-deep:#020509;--panel:#0a1622;--panel-2:#0e1e2e;
+    --line:#153244;--line-2:#1f4d66;--ink:#e8f5fc;--ink-2:#93c2da;--ink-3:#52829b;
+    --accent:#36cce0;--accent-2:#7de6ff;
+    --s:#ffd34d;--a:#4fe0a0;--b:#5aa8ff;--c:#7f96a8}
+
+  .stage{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 20px 90px}
+
+  /* backdrop */
+  .backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .layer{position:absolute;inset:0;transition:opacity .6s ease}
+  .l-bo1-glow{background:radial-gradient(ellipse 60% 45% at 82% 8%,rgba(150,34,26,.26),transparent 55%),radial-gradient(ellipse 55% 50% at 12% 88%,rgba(58,84,54,.20),transparent 60%),radial-gradient(ellipse 120% 90% at 50% 50%,transparent 40%,rgba(0,0,0,.72) 100%)}
+  .l-scan{background:repeating-linear-gradient(0deg,rgba(0,0,0,.38) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+  .l-numbers{font-family:var(--mono);font-size:13px;line-height:1.35;color:#7ea86a;opacity:.05;white-space:pre;overflow:hidden;letter-spacing:.15em;padding:8px;font-weight:700;text-shadow:0 0 6px rgba(126,168,106,.5)}
+  .l-bo2-glow{background:radial-gradient(ellipse 65% 50% at 50% -5%,rgba(54,204,224,.14),transparent 60%),radial-gradient(circle at 50% 115%,rgba(10,40,60,.55),transparent 55%);opacity:0}
+  .l-hex{opacity:0;background-image:linear-gradient(60deg,transparent 49.4%,rgba(54,204,224,.09) 49.4% 50.6%,transparent 50.6%),linear-gradient(-60deg,transparent 49.4%,rgba(54,204,224,.09) 49.4% 50.6%,transparent 50.6%),linear-gradient(0deg,transparent 49.4%,rgba(54,204,224,.06) 49.4% 50.6%,transparent 50.6%);background-size:46px 80px}
+  .l-sweep{opacity:0;background:linear-gradient(180deg,transparent,rgba(90,220,255,.05) 50%,transparent);height:180px;animation:sweep 7s linear infinite}
+  .app[data-active="bo1"] .l-bo1-glow{opacity:1}.app[data-active="bo1"] .l-scan{opacity:.6}.app[data-active="bo1"] .l-numbers{opacity:.05}
+  .app[data-active="bo2"] .l-bo1-glow,.app[data-active="bo2"] .l-scan,.app[data-active="bo2"] .l-numbers{opacity:0}
+  .app[data-active="bo2"] .l-bo2-glow,.app[data-active="bo2"] .l-hex,.app[data-active="bo2"] .l-sweep{opacity:1}
+  @keyframes sweep{0%{transform:translateY(-200px)}100%{transform:translateY(100vh)}}
+
+  /* tabs */
+  .tabs{position:relative;z-index:3;display:flex;max-width:1200px;margin:0 auto;padding:22px 20px 0}
+  .tab{flex:1;position:relative;cursor:pointer;border:1px solid var(--line);border-bottom:none;background:linear-gradient(180deg,var(--panel-2),var(--panel));color:var(--ink-3);padding:18px 22px 20px;overflow:hidden;transition:.3s;text-align:left;font-family:inherit}
+  .tab:first-child{border-right:none}
+  .tab .t-code{font-family:var(--mono);font-size:10px;letter-spacing:.28em;display:block;margin-bottom:6px;opacity:.8}
+  .tab .t-name{display:block;font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:clamp(20px,3.4vw,34px);line-height:.9}
+  .tab .t-sub{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;margin-top:6px;opacity:.7;text-transform:uppercase}
+  .tab[aria-selected="true"]{color:var(--ink)}
+  .app[data-active="bo1"] .tab[data-g="bo1"]{background:linear-gradient(180deg,#1c1e15,#111309);border-color:var(--line-2);box-shadow:inset 0 0 30px rgba(0,0,0,.5),0 -2px 0 var(--accent)}
+  .app[data-active="bo1"] .tab[data-g="bo1"] .t-code{color:var(--accent)}
+  .app[data-active="bo1"] .tab[data-g="bo1"] .t-name{text-shadow:0 1px 0 rgba(0,0,0,.6)}
+  .app[data-active="bo2"] .tab[data-g="bo2"]{background:linear-gradient(180deg,#0a2333,#08161f);border-color:var(--accent);box-shadow:inset 0 0 26px rgba(54,204,224,.2),0 -2px 0 var(--accent);clip-path:polygon(0 0,100% 0,100% 100%,14px 100%,0 calc(100% - 14px))}
+  .app[data-active="bo2"] .tab[data-g="bo2"] .t-code{color:var(--accent)}
+  .app[data-active="bo2"] .tabs{gap:6px}
+  .app[data-active="bo2"] .tab{clip-path:polygon(0 0,100% 0,100% 100%,14px 100%,0 calc(100% - 14px))}
+
+  /* hero */
+  .hero{position:relative;z-index:3;border:1px solid var(--line);border-top:2px solid var(--accent);background:var(--panel);padding:30px 26px;overflow:hidden;transition:.5s}
+  .app[data-active="bo2"] .hero{clip-path:polygon(0 0,100% 0,100% calc(100% - 20px),calc(100% - 20px) 100%,0 100%)}
+  .hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:10px}
+  .hero .eyebrow::before{content:"";width:22px;height:1px;background:var(--accent)}
+  .app[data-active="bo1"] .hero{background:linear-gradient(180deg,#181a12,#101208)}
+  h1{font-family:var(--cond);font-weight:800;text-transform:uppercase;line-height:.86;margin:14px 0 0;font-size:clamp(40px,9vw,96px);letter-spacing:.005em;text-wrap:balance}
+  .app[data-active="bo1"] h1{color:var(--ink);letter-spacing:.02em;text-shadow:0 2px 3px rgba(0,0,0,.7)}
+  .app[data-active="bo1"] h1 .accent{color:var(--ink);opacity:.62}
+  .app[data-active="bo2"] h1{font-family:var(--sans);font-weight:200;letter-spacing:.12em;font-size:clamp(30px,6vw,68px)}
+  .app[data-active="bo2"] h1 .accent{color:var(--accent);font-weight:700;text-shadow:0 0 18px rgba(54,204,224,.55)}
+  .hero p{max-width:64ch;color:var(--ink-2);font-family:var(--mono);font-size:13.5px;line-height:1.6;margin:16px 0 0}
+  .app[data-active="bo2"] .hero p{font-family:var(--sans);font-size:14.5px}
+  .hero p b{color:var(--ink)}
+
+  /* deck */
+  .deck{position:relative;z-index:3;margin:16px 0 22px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 92%,transparent);padding:14px}
+  .app[data-active="bo2"] .deck{clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px))}
+  .deck-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .deck-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);min-width:78px}
+  .chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line-2);padding:7px 13px;cursor:pointer;transition:.15s;text-transform:uppercase}
+  .chip:hover{color:var(--ink);border-color:var(--ink-3)}
+  .chip[aria-pressed="true"]{background:var(--accent);color:var(--bg-deep);border-color:var(--accent);font-weight:700}
+  .app[data-active="bo2"] .chip{clip-path:polygon(0 0,100% 0,100% 100%,7px 100%,0 calc(100% - 7px))}
+  .search{flex:1;min-width:190px;display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line-2);padding:0 12px}
+  .search svg{width:14px;height:14px;fill:var(--ink-3);flex-shrink:0}
+  .search input{flex:1;background:transparent;border:0;outline:none;color:var(--ink);font-family:var(--mono);font-size:13px;padding:9px 0}
+  .search input::placeholder{color:var(--ink-3)}
+  .count{font-family:var(--mono);font-size:12px;color:var(--ink-3);white-space:nowrap}
+  .count b{color:var(--accent)}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .leg{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);text-transform:uppercase}
+  .leg i{width:12px;height:12px;display:inline-block}
+
+  /* grid + cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:15px;position:relative;z-index:3}
+  .card{position:relative;background:var(--panel);border:1px solid var(--line-2);padding:0 0 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tier-c);z-index:3}
+  .card.s{--tier-c:var(--s)}.card.a{--tier-c:var(--a)}.card.b{--tier-c:var(--b)}.card.c{--tier-c:var(--c)}
+  .card:hover{transform:translateY(-2px)}
+  .app[data-active="bo1"] .card{border-radius:2px;background:linear-gradient(180deg,rgba(26,28,20,.6),rgba(12,13,9,.65))}
+  .app[data-active="bo1"] .card:hover{border-color:var(--accent);box-shadow:0 0 22px rgba(201,162,75,.12)}
+  .app[data-active="bo2"] .card{background:linear-gradient(155deg,rgba(14,32,46,.85),rgba(8,18,28,.9));clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%)}
+  .app[data-active="bo2"] .card:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(54,204,224,.18)}
+
+  /* weapon image plate */
+  .plate{position:relative;min-height:132px;display:flex;align-items:center;justify-content:center;padding:12px 14px;border-bottom:1px solid var(--line);overflow:hidden;
+    background:radial-gradient(ellipse 66% 84% at 50% 46%,rgba(214,200,152,.14),transparent 64%),linear-gradient(180deg,#1c1e15,#111309)}
+  .plate .grid-tex{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:18px 18px;opacity:.16;pointer-events:none}
+  .plate .sil-wrap{position:relative;z-index:1;width:100%;display:flex;justify-content:center}
+  .plate .sil{width:78%;height:80px;display:block;color:var(--ink-2);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+  .app[data-active="bo1"] .plate .sil{color:#9a9472}
+  .app[data-active="bo2"] .plate .sil{color:#8fd4e6}
+  .plate .wimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;padding:0;z-index:2}
+  .plate.has-img{padding:0;background:none}
+  .plate.has-img .grid-tex{display:none}
+  .body{padding:0 16px 0 20px;display:flex;flex-direction:column;gap:12px}
+
+  .c-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .c-name{font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:27px;line-height:.94;margin:0}
+  .app[data-active="bo2"] .c-name{font-family:var(--sans);font-weight:700;letter-spacing:.04em;font-size:22px}
+  .c-cat{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-top:7px;display:flex;align-items:center;gap:7px}
+  .c-cat .dot{width:6px;height:6px;background:var(--accent);flex-shrink:0}
+  .app[data-active="bo2"] .c-cat .dot{transform:rotate(45deg)}
+  .tier{font-family:var(--cond);font-weight:800;font-size:20px;line-height:1;width:36px;height:36px;display:grid;place-items:center;flex-shrink:0;color:var(--bg-deep);background:var(--tier-c);position:relative}
+  .tier small{font-size:8px;position:absolute;bottom:2px}
+  .app[data-active="bo1"] .tier{border-radius:2px;transform:rotate(-4deg);box-shadow:0 0 0 2px var(--panel),0 0 0 3px var(--tier-c)}
+  .app[data-active="bo2"] .tier{clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:42px;height:38px;box-shadow:0 0 12px color-mix(in srgb,var(--tier-c) 55%,transparent)}
+
+  .block{display:flex;flex-direction:column;gap:6px}
+  .b-label{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .b-label .mine{color:var(--accent);border:1px solid var(--accent);padding:1px 5px;font-size:8px;letter-spacing:.1em}
+  .b-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-family:var(--mono);font-size:11.5px;padding:4px 9px;border:1px solid var(--line-2);color:var(--ink);background:var(--panel-2);display:inline-flex;align-items:center;gap:6px}
+  .app[data-active="bo2"] .tag{clip-path:polygon(0 0,100% 0,100% 100%,5px 100%,0 calc(100% - 5px))}
+  .tag.att{border-color:color-mix(in srgb,var(--accent) 42%,var(--line-2))}
+  .tag.att::before{content:"◈";color:var(--accent);font-size:10px}
+  .tag.perk::before{content:"▹";color:var(--ink-3);font-size:11px}
+  .reason{font-size:13px;line-height:1.55;color:var(--ink-2);margin:0}
+  .app[data-active="bo2"] .reason{font-family:var(--sans);font-size:13.5px}
+  .edit-btn{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:transparent;color:var(--accent);border:1px solid var(--accent);padding:8px 12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:8px;justify-content:center;margin-top:2px}
+  .edit-btn:hover{background:var(--accent);color:var(--bg-deep)}
+  .app[data-active="bo2"] .edit-btn{clip-path:polygon(0 0,100% 0,100% 100%,8px 100%,0 calc(100% - 8px))}
+  .empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--ink-3);font-family:var(--mono);font-size:13px;border:1px dashed var(--line-2)}
+
+  /* perk cards */
+  .pcard .body{padding:16px}
+  .pcard.slot1{--tier-c:#5b9bd6}.pcard.slot2{--tier-c:#c8503f}.pcard.slot3{--tier-c:#79955a}
+  .slot-badge{font-family:var(--cond);font-weight:800;font-size:19px;line-height:1;width:34px;height:34px;display:grid;place-items:center;flex-shrink:0;color:var(--bg-deep);background:var(--tier-c)}
+  .app[data-active="bo1"] .slot-badge{border-radius:2px;transform:rotate(-4deg);box-shadow:0 0 0 2px var(--panel),0 0 0 3px var(--tier-c)}
+  .app[data-active="bo2"] .slot-badge{clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:40px;box-shadow:0 0 12px color-mix(in srgb,var(--tier-c) 55%,transparent)}
+  .pro-block{border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent);padding:10px 12px}
+  .app[data-active="bo2"] .pro-block{clip-path:polygon(0 0,100% 0,100% 100%,8px 100%,0 calc(100% - 8px))}
+  .pro-label{color:var(--accent)!important}
+  .pro-label::after{background:color-mix(in srgb,var(--accent) 40%,var(--line))!important}
+  .nopro{font-family:var(--mono);font-size:11px;color:var(--ink-3);border:1px dashed var(--line-2);padding:8px 12px}
+  .chal-label{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  .chal{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+  .chal li{font-family:var(--mono);font-size:11.5px;line-height:1.4;color:var(--ink-2);padding-left:16px;position:relative}
+  .chal li::before{content:"▸";position:absolute;left:0;color:var(--accent)}
+  .byline{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase}
+  .app[data-active="bo2"] .reason,.byline{}
+
+  /* builder: author line + perk slots + save form */
+  .author-line{font-family:var(--mono);font-size:11px;color:var(--ink-2);border:1px solid var(--line-2);background:var(--panel-2);padding:8px 12px}
+  .author-line b{color:var(--accent)}
+  .pslots .slot{min-width:0;max-width:none}
+  .saveform{padding:16px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+  .saveform[hidden]{display:none}
+  .sf-title{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .sf-row{display:flex;gap:10px;flex-wrap:wrap}
+  .sf-row input{flex:1;min-width:160px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--ink);font-family:var(--mono);font-size:13px;padding:10px 12px;outline:none}
+  .sf-row input:focus{border-color:var(--accent)}
+  .app[data-active="bo2"] .sf-row input{clip-path:polygon(0 0,100% 0,100% 100%,7px 100%,0 calc(100% - 7px))}
+  .sf-err{font-family:var(--mono);font-size:11px;color:#e06b4a;min-height:14px}
+  .sf-actions{display:flex;gap:10px}
+  .sf-actions button{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;cursor:pointer;border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink-2)}
+  .sf-actions .save{background:var(--accent);color:var(--bg-deep);border-color:var(--accent);font-weight:700}
+  .m-actions[hidden]{display:none}
+
+  /* sysnote + footer */
+  .sysnote{position:relative;z-index:3;margin-top:34px;border:1px solid var(--line-2);background:var(--panel);padding:20px 22px}
+  .app[data-active="bo2"] .sysnote{clip-path:polygon(0 0,100% 0,100% 100%,16px 100%,0 calc(100% - 16px))}
+  .sysnote h3{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;display:flex;align-items:center;gap:9px}
+  .sysnote h3::before{content:"";width:9px;height:9px;background:var(--accent)}
+  .app[data-active="bo2"] .sysnote h3::before{transform:rotate(45deg)}
+  .sysnote p{font-family:var(--mono);font-size:13px;line-height:1.65;color:var(--ink-2);margin:0}
+  .app[data-active="bo2"] .sysnote p{font-family:var(--sans);font-size:13.5px}
+  .sysnote b{color:var(--ink)}
+  footer{position:relative;z-index:3;margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.75}
+
+  /* ===== BUILDER MODAL ===== */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto}
+  .overlay.open{display:flex}
+  .modal{width:min(720px,100%);background:var(--panel);border:1px solid var(--accent);position:relative}
+  .app[data-active="bo1"] .modal{box-shadow:0 0 40px rgba(0,0,0,.6)}
+  .app[data-active="bo2"] .modal{box-shadow:0 0 40px rgba(54,204,224,.2);clip-path:polygon(0 0,100% 0,100% calc(100% - 20px),calc(100% - 20px) 100%,0 100%)}
+  .m-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 20px;border-bottom:1px solid var(--line);gap:12px}
+  .m-title{font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:30px;line-height:.9;margin:0}
+  .app[data-active="bo2"] .m-title{font-family:var(--sans);font-weight:700;font-size:24px;letter-spacing:.03em}
+  .m-sub{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:6px}
+  .m-close{background:transparent;border:1px solid var(--line-2);color:var(--ink-2);width:34px;height:34px;cursor:pointer;font-size:16px;flex-shrink:0}
+  .m-close:hover{border-color:var(--accent);color:var(--accent)}
+  .m-body{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
+
+  .buildzone{position:relative;border:1px dashed var(--line-2);background:radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%);padding:14px}
+  .buildzone .bz-media{position:relative;height:96px}
+  .buildzone .bz-sil{width:100%;height:96px;color:var(--ink-2);display:block}
+  .app[data-active="bo1"] .buildzone .bz-sil{color:#9a9472}
+  .app[data-active="bo2"] .buildzone .bz-sil{color:#8fd4e6}
+  .buildzone .bz-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+  .slots{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;justify-content:center}
+  .slot{min-width:120px;min-height:42px;flex:1;max-width:200px;border:1px dashed var(--line-2);background:var(--panel-2);display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3);cursor:pointer;transition:.15s;text-align:center}
+  .slot.drop{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--panel-2));color:var(--ink)}
+  .slot.filled{border-style:solid;border-color:color-mix(in srgb,var(--accent) 55%,var(--line-2));color:var(--ink)}
+  .slot.filled::before{content:"◈";color:var(--accent)}
+  .slot .rm{color:var(--ink-3);font-size:11px}
+  .slot.filled:hover .rm{color:var(--accent)}
+
+  .wild{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.08em;flex-wrap:wrap}
+  .wild button{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;background:var(--panel-2);border:1px solid var(--line-2);color:var(--ink-2);padding:6px 12px;cursor:pointer}
+  .wild button[aria-pressed="true"]{background:var(--accent);color:var(--bg-deep);border-color:var(--accent);font-weight:700}
+
+  .pal-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .pal-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .palette{display:flex;flex-wrap:wrap;gap:8px}
+  .palitem{font-family:var(--mono);font-size:12px;padding:7px 11px;border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink);cursor:grab;user-select:none;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+  .palitem::before{content:"⠿";color:var(--ink-3);font-size:12px}
+  .palitem:hover{border-color:var(--accent);color:var(--accent)}
+  .palitem:active{cursor:grabbing}
+  .palitem.used{opacity:.35;pointer-events:none}
+  .app[data-active="bo2"] .palitem,.app[data-active="bo2"] .slot{clip-path:polygon(0 0,100% 0,100% 100%,6px 100%,0 calc(100% - 6px))}
+
+  .m-actions{display:flex;gap:10px;flex-wrap:wrap;padding:16px 20px;border-top:1px solid var(--line)}
+  .m-actions button{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;cursor:pointer;border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink-2)}
+  .m-actions .save{background:var(--accent);color:var(--bg-deep);border-color:var(--accent);font-weight:700}
+  .m-actions button:hover{border-color:var(--accent)}
+  .m-actions .save:hover{filter:brightness(1.1)}
+  .m-actions .spacer{flex:1}
+  .m-hint{font-family:var(--mono);font-size:11px;color:var(--ink-3);padding:0 20px 16px;line-height:1.5}
+
+  @media (max-width:560px){.deck-label{min-width:100%}.tab .t-sub{display:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-active="bo1">
+  <div class="backdrop">
+    <div class="layer l-bo1-glow"></div>
+    <div class="layer l-numbers" id="numbers"></div>
+    <div class="layer l-scan"></div>
+    <div class="layer l-bo2-glow"></div>
+    <div class="layer l-hex"></div>
+    <div class="layer l-sweep"></div>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Kies game">
+    <button class="tab" data-g="bo1" role="tab" aria-selected="true">
+      <span class="t-code">// 2010 · TREYARCH</span><span class="t-name">Black Ops</span><span class="t-sub">Cold War Arsenal</span>
+    </button>
+    <button class="tab" data-g="bo2" role="tab" aria-selected="false">
+      <span class="t-code">// 2025 · STRIKE FORCE</span><span class="t-name">Black Ops II</span><span class="t-sub">Future Warfare Arsenal</span>
+    </button>
+  </nav>
+
+  <div class="stage">
+    <section class="hero">
+      <div class="eyebrow" id="eyebrow"></div>
+      <h1 id="title"></h1>
+      <p id="lede"></p>
+    </section>
+
+    <div class="deck">
+      <div class="deck-row">
+        <span class="deck-label">View</span>
+        <div class="chip-row" id="modeSeg" style="display:flex;flex-wrap:wrap;gap:9px">
+          <button class="chip" data-m="weapons" aria-pressed="true">Arsenal</button>
+          <button class="chip" data-m="perks" aria-pressed="false">Perks</button>
+        </div>
+      </div>
+      <div class="deck-row">
+        <span class="deck-label" id="filterLabel">Category</span>
+        <div class="chip-row" id="cats" style="display:flex;flex-wrap:wrap;gap:9px"></div>
+      </div>
+      <div class="deck-row">
+        <div class="search">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1114 9.5 4.5 4.5 0 019.5 14z"/></svg>
+          <input id="q" type="search" placeholder="Search weapon, attachment or perk…" aria-label="Search">
+        </div>
+        <div class="legend">
+          <span class="leg"><i style="background:var(--s)"></i>S</span><span class="leg"><i style="background:var(--a)"></i>A</span><span class="leg"><i style="background:var(--b)"></i>B</span><span class="leg"><i style="background:var(--c)"></i>C</span>
+        </div>
+        <span class="count" id="count"></span>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <section class="sysnote" id="sysnote"></section>
+    <footer>
+      Data compiled from community sources: Call of Duty Wiki tier lists, Reddit (r/blackops, r/blackops2), GameFAQs boards, Steam class guides &amp; YouTube meta guides.<br>
+      Weapon images: drop photos in <b>assets/weapons/&lt;game&gt;/&lt;slug&gt;.png</b> (e.g. assets/weapons/bo1/galil.png). Without a photo a stylised silhouette is shown. Tiers reflect recurring consensus, not absolute truth. · Updated: 10 July 2026.
+    </footer>
+  </div>
+
+  <!-- BUILDER MODAL -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal">
+      <div class="m-head">
+        <div>
+          <h2 class="m-title" id="mTitle"></h2>
+          <div class="m-sub" id="mSub"></div>
+        </div>
+        <button class="m-close" id="mClose" aria-label="Sluiten">✕</button>
+      </div>
+      <div class="m-body">
+        <div class="author-line" id="authorLine"></div>
+        <div class="buildzone" id="buildzone">
+          <div class="bz-media" id="bzSil"></div>
+          <div class="slots" id="slots"></div>
+        </div>
+        <div class="wild" id="wildRow"></div>
+        <div>
+          <div class="pal-label">Attachments — drag or tap to add</div>
+          <div class="palette" id="palette" style="margin-top:10px"></div>
+        </div>
+        <div>
+          <div class="pal-label">Perks — drag or tap into the right slot</div>
+          <div class="slots pslots" id="pslots" style="margin-top:10px"></div>
+          <div class="palette" id="ppalette" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="saveform" id="saveForm" hidden>
+        <div class="sf-title">Save as your loadout</div>
+        <div class="sf-row">
+          <input id="uName" maxlength="24" placeholder="Your name (e.g. Mason)">
+          <input id="uTitle" maxlength="40" placeholder="Loadout title (e.g. Rush Beast)">
+        </div>
+        <div class="sf-err" id="sfErr"></div>
+        <div class="sf-actions">
+          <button class="save" id="mConfirmSave">Save</button>
+          <button id="mCancelSave">Cancel</button>
+        </div>
+      </div>
+      <div class="m-actions" id="mActions">
+        <button class="save" id="mSave">Save loadout</button>
+        <button id="mRecommend">Load meta</button>
+        <span class="spacer"></span>
+        <button id="mReset">Clear all</button>
+      </div>
+      <div class="m-hint" id="mHint"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WEAPONS=[
+  // ===== BLACK OPS 1 =====
+  {g:"bo1",name:"Galil",cat:"Assault Rifle",tier:"S",att:["Reflex Sight","Dual Mag"],perks:["Ghost","Warlord","Marathon"],why:"Widely regarded as the best AR in BO1: low recoil, clean iron sights, high damage and a large ammo pool. Dual Mag (via Warlord) gives unmatched ammo and fast reloads."},
+  {g:"bo1",name:"Commando",cat:"Assault Rifle",tier:"S",att:["Reflex Sight","Extended Mag"],perks:["Ghost","Warlord","Ninja"],why:"Hard-hitting with a fast reload and reliable at mid-to-long range. It can't take a Grip, so control the recoil yourself and run Extended Mag for sustained fire. A top pick alongside the Galil."},
+  {g:"bo1",name:"FAMAS",cat:"Assault Rifle",tier:"S",att:["Reflex Sight"],perks:["Ghost","Sleight of Hand","Marathon"],why:"One of the fastest-firing and most accurate full-auto ARs — an extremely quick time-to-kill."},
+  {g:"bo1",name:"AUG",cat:"Assault Rifle",tier:"A",att:["Suppressor"],perks:["Ghost","Sleight of Hand","Ninja"],why:"Very accurate and easy to control; excellent as a quiet, stealthy rifle with Ghost."},
+  {g:"bo1",name:"G11",cat:"Assault Rifle",tier:"A",att:["Low Power Scope"],perks:["Ghost","Sleight of Hand","Ninja"],why:"3-round burst with a built-in scope; extremely accurate at range and an effective one-burst kill for precise players. Only takes a Low Power Scope or Variable Zoom."},
+  {g:"bo1",name:"M16",cat:"Assault Rifle",tier:"A",att:["Red Dot Sight"],perks:["Hardline","Warlord","Marathon"],why:"3-round burst that one-bursts at most ranges; rewards accurate players and punishes missed bursts."},
+  {g:"bo1",name:"AK-47",cat:"Assault Rifle",tier:"B",att:["Reflex Sight","Extended Mag"],perks:["Ghost","Warlord","Ninja"],why:"The highest damage-per-shot of the ARs but heavy recoil you must control yourself (no Grip available); Extended Mag keeps you in the fight longer."},
+  {g:"bo1",name:"M14",cat:"Assault Rifle",tier:"B",att:["Reflex Sight"],perks:["Ghost","Sleight of Hand","Marathon"],why:"Semi-automatic with high damage; a two-shot kill but reliant on your trigger speed and accuracy."},
+  {g:"bo1",name:"FN FAL",cat:"Assault Rifle",tier:"B",att:["Reflex Sight"],perks:["Ghost","Sleight of Hand","Marathon"],why:"A semi-auto hard-hitter with strong damage per shot; rewards a fast, accurate trigger finger."},
+  {g:"bo1",name:"Enfield",cat:"Assault Rifle",tier:"B",att:["Reflex Sight"],perks:["Ghost","Sleight of Hand","Marathon"],why:"A solid all-rounder with good recoil and clean iron sights; consistent but outclassed by the Galil and FAMAS."},
+  {g:"bo1",name:"AK74u",cat:"SMG",tier:"S",att:["Rapid Fire"],perks:["Lightweight","Sleight of Hand","Marathon"],why:"The 'SMG that plays like an AR': great range and damage. Rapid Fire pushes its TTK to elite levels."},
+  {g:"bo1",name:"MP5K",cat:"SMG",tier:"S",att:["Rapid Fire"],perks:["Lightweight","Steady Aim","Marathon"],why:"Low recoil and fast handling make it the premier close-quarters rush SMG; Rapid Fire gives a lightning-fast TTK."},
+  {g:"bo1",name:"MPL",cat:"SMG",tier:"A",att:["Rapid Fire"],perks:["Lightweight","Sleight of Hand","Marathon"],why:"A naturally high fire rate and easy control; with Rapid Fire one of the fastest-killing SMGs."},
+  {g:"bo1",name:"Spectre",cat:"SMG",tier:"A",att:["Reflex Sight","Extended Mag"],perks:["Ghost","Steady Aim","Marathon"],why:"Very fast ADS and fire rate for aggressive rushing; Extended Mag offsets the small magazine."},
+  {g:"bo1",name:"MAC11",cat:"SMG",tier:"A",att:["Rapid Fire"],perks:["Lightweight","Steady Aim","Marathon"],why:"An extremely high fire rate that shreds up close; with Rapid Fire the fastest TTK at very short range."},
+  {g:"bo1",name:"Skorpion",cat:"SMG",tier:"B",att:["Rapid Fire","Extended Mag"],perks:["Lightweight","Steady Aim","Marathon"],why:"A fast starter SMG with a high fire rate but a small magazine; Extended Mag is almost mandatory."},
+  {g:"bo1",name:"PM63",cat:"SMG",tier:"B",att:["Rapid Fire"],perks:["Lightweight","Steady Aim","Marathon"],why:"A machine pistol with a high fire rate and good hip-fire; effective in CQC but falls off quickly at range."},
+  {g:"bo1",name:"Uzi",cat:"SMG",tier:"B",att:["Rapid Fire"],perks:["Lightweight","Sleight of Hand","Marathon"],why:"High fire rate and strong hip-fire; effective in CQC but recoil and ammo keep it below the top SMGs."},
+  {g:"bo1",name:"RPK",cat:"LMG",tier:"A",att:["Reflex Sight"],perks:["Ghost","Sleight of Hand","Ninja"],why:"The most accurate and easiest-to-use LMG with strong damage; the go-to for holding lanes."},
+  {g:"bo1",name:"HK21",cat:"LMG",tier:"A",att:["Reflex Sight"],perks:["Ghost","Sleight of Hand","Ninja"],why:"A high fire rate and large magazine give it AR-like handling with LMG capacity."},
+  {g:"bo1",name:"Stoner63",cat:"LMG",tier:"B",att:["Extended Mag"],perks:["Ghost","Sleight of Hand","Marathon"],why:"A balanced LMG with good damage; usable but below the RPK and HK21."},
+  {g:"bo1",name:"M60",cat:"LMG",tier:"B",att:["Extended Mag"],perks:["Ghost","Sleight of Hand","Marathon"],why:"Heavy damage per shot and huge magazines, but slow fire rate and handling; a suppression weapon."},
+  {g:"bo1",name:"L96A1",cat:"Sniper Rifle",tier:"S",att:["Variable Zoom"],perks:["Ghost","Steady Aim","Ninja"],why:"The definitive BO1 sniper: a bolt-action one-shot kill from the torso up, manageable recoil and a fast follow-up."},
+  {g:"bo1",name:"PSG1",cat:"Sniper Rifle",tier:"B",att:["Variable Zoom"],perks:["Ghost","Steady Aim","Ninja"],why:"Semi-automatic with low recoil, good for follow-up shots, but lacks the L96A1's one-shot potential."},
+  {g:"bo1",name:"Dragunov",cat:"Sniper Rifle",tier:"C",att:["Variable Zoom"],perks:["Ghost","Steady Aim","Ninja"],why:"Semi-auto with inconsistent damage, heavy recoil and a slow reload; a stepping stone to the L96A1."},
+  {g:"bo1",name:"WA2000",cat:"Sniper Rifle",tier:"C",att:["Variable Zoom"],perks:["Ghost","Steady Aim","Ninja"],why:"Semi-auto with a small magazine and inconsistent one-shots; ranked lowest by the community."},
+  {g:"bo1",name:"SPAS-12",cat:"Shotgun",tier:"A",att:["Suppressor"],perks:["Lightweight","Steady Aim","Marathon"],why:"A pump shotgun with the best range and reliable one-shot potential in its class; the top primary-slot shotgun. Its only attachment option is the Suppressor."},
+  {g:"bo1",name:"Stakeout",cat:"Shotgun",tier:"A",att:["Grip"],perks:["Lightweight","Steady Aim","Marathon"],why:"A fast-firing pump with good hip-fire; Grip tightens the spread — a strong aggressive rush shotgun."},
+  {g:"bo1",name:"HS10",cat:"Shotgun",tier:"B",att:["Dual Wield"],perks:["Lightweight","Steady Aim","Marathon"],why:"Semi-auto with fast follow-up shots; short range but a high volume of fire, best akimbo."},
+  {g:"bo1",name:"Olympia",cat:"Shotgun",tier:"B",att:[],perks:["Lightweight","Steady Aim","Marathon"],why:"A double-barrel with a strong one-shot up close but only two shots; demands aggressive, precise positioning. Has no attachments."},
+  {g:"bo1",name:"Python",cat:"Pistol",tier:"A",att:["Speed Reloader"],perks:["Ghost","Warlord","Marathon"],why:"A high-damage revolver that can two-shot; the strongest secondary and a viable primary for skilled players."},
+  {g:"bo1",name:"CZ75",cat:"Pistol",tier:"B",att:["Full Auto Upgrade"],perks:["Ghost","Warlord","Marathon"],why:"A machine pistol; with Full Auto (or Dual Wield) a strong CQC backup that plays like a mini-SMG."},
+  {g:"bo1",name:"M1911",cat:"Pistol",tier:"B",att:["Dual Wield"],perks:["Ghost","Warlord","Marathon"],why:"A reliable starter pistol with solid damage; dual-wield makes it a surprisingly strong CQC backup."},
+  {g:"bo1",name:"Makarov",cat:"Pistol",tier:"C",att:["Dual Wield"],perks:["Ghost","Warlord","Marathon"],why:"A fast-firing semi-auto sidearm; weak per shot but usable akimbo in a pinch."},
+  {g:"bo1",name:"ASP",cat:"Pistol",tier:"C",att:["Dual Wield"],perks:["Ghost","Warlord","Marathon"],why:"A compact pocket pistol with tiny iron sights; purely a last-resort backup, best dual-wielded."},
+  {g:"bo1",name:"M72 LAW",cat:"Launcher",tier:"B",att:[],perks:["Hardline","Warlord","Hacker"],why:"A dumb-fire rocket for objectives and anti-vehicle/anti-air; a common secondary on objective classes."},
+  {g:"bo1",name:"Strela-3",cat:"Launcher",tier:"B",att:[],perks:["Hardline","Warlord","Hacker"],why:"A lock-on anti-air launcher; essential against killstreak helicopters and jets on open maps."},
+  {g:"bo1",name:"China Lake",cat:"Launcher",tier:"C",att:[],perks:["Hardline","Warlord","Hacker"],why:"A pump-action grenade launcher; fun for area denial but unreliable as a main weapon."},
+  {g:"bo1",name:"Crossbow",cat:"Special",tier:"B",att:[],perks:["Ghost","Sleight of Hand","Ninja"],why:"Explosive bolts with a timed fuse; a silent one-shot area kill that's satisfying and surprisingly effective. Has no attachments."},
+  {g:"bo1",name:"Ballistic Knife",cat:"Special",tier:"B",att:[],perks:["Lightweight","Steady Aim","Marathon"],why:"A one-hit-kill knife you can also fire; maximum mobility and a cult favourite for knife-only runs. Has no attachments."},
+
+  // ===== BLACK OPS 2 =====
+  {g:"bo2",name:"AN-94",cat:"Assault Rifle",tier:"S",att:["EOTech Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"Its hyperburst fires the first two rounds extremely fast — effectively a 3-shot kill. Widely regarded as the best AR."},
+  {g:"bo2",name:"M8A1",cat:"Assault Rifle",tier:"S",att:["Reflex Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"A 4-round burst that's laser-accurate; a full burst downs almost instantly. Often paired with Select Fire up close."},
+  {g:"bo2",name:"FAL OSW",cat:"Assault Rifle",tier:"S",att:["Select Fire","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"Semi-auto with high accuracy; with Select Fire it's fully automatic and was so strong it got banned from League Play."},
+  {g:"bo2",name:"MTAR",cat:"Assault Rifle",tier:"A",att:["Reflex Sight","Quickdraw Handle"],perks:["Lightweight","Toughness","Dexterity"],why:"Fast fire rate, low recoil and versatile handling; plays almost like an SMG up close."},
+  {g:"bo2",name:"Type 25",cat:"Assault Rifle",tier:"A",att:["Reflex Sight","Rapid Fire"],perks:["Lightweight","Toughness","Dexterity"],why:"A very high fire rate; Rapid Fire pushes the kill speed toward SMG level while keeping AR range."},
+  {g:"bo2",name:"SWAT-556",cat:"Assault Rifle",tier:"A",att:["EOTech Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"A 3-round burst with high per-burst damage; a two-burst kill at range. Select Fire is a popular close-range alternative."},
+  {g:"bo2",name:"SCAR-H",cat:"Assault Rifle",tier:"A",att:["Fast Mag","Reflex Sight"],perks:["Ghost","Toughness","Dexterity"],why:"Hard-hitting with excellent damage per shot, but the small magazine makes Fast Mag valuable."},
+  {g:"bo2",name:"M27",cat:"Assault Rifle",tier:"A",att:["Reflex Sight","Quickdraw Handle"],perks:["Lightweight","Toughness","Dexterity"],why:"A balanced automatic AR with manageable recoil; a solid all-rounder just below the top tier."},
+  {g:"bo2",name:"SMR",cat:"Assault Rifle",tier:"B",att:["Reflex Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"Semi-auto with strong damage, but recoil and trigger reliance keep it below the burst/auto rifles."},
+  {g:"bo2",name:"MSMC",cat:"SMG",tier:"S",att:["Fast Mag","Quickdraw Handle","Long Barrel"],perks:["Flak Jacket","Toughness","Dexterity"],why:"The fastest close-range kill speed of any SMG; a run-and-gun staple. Often runs Gunfighter for a 3rd attachment."},
+  {g:"bo2",name:"Skorpion EVO",cat:"SMG",tier:"S",att:["Rapid Fire","Quickdraw Handle"],perks:["Flak Jacket","Toughness","Dexterity"],why:"With Rapid Fire its already high fire rate becomes a laser with an extreme close-range TTK — often at the very top of tier lists."},
+  {g:"bo2",name:"PDW-57",cat:"SMG",tier:"A",att:["Rapid Fire","Quickdraw Handle"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A large default magazine and low recoil; Rapid Fire raises the kill speed, or run Suppressor + Fast Mag for a Ghost class."},
+  {g:"bo2",name:"Chicom CQB",cat:"SMG",tier:"A",att:["Rapid Fire","Quickdraw Handle"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A 3-round burst that, with Rapid Fire and the trigger held, reaches a very high effective fire rate."},
+  {g:"bo2",name:"Vector K10",cat:"SMG",tier:"A",att:["Rapid Fire","Quickdraw Handle"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A blazing fire rate that melts targets up close; it burns ammo fast, so Fast Mag is a common alternative."},
+  {g:"bo2",name:"Peacekeeper",cat:"SMG",tier:"A",att:["Reflex Sight","Quickdraw Handle"],perks:["Lightweight","Toughness","Dexterity"],why:"An SMG/AR hybrid (DLC) with rifle-like accuracy plus SMG mobility — a versatile do-everything gun."},
+  {g:"bo2",name:"MP7",cat:"SMG",tier:"B",att:["Rapid Fire","Quickdraw Handle"],perks:["Flak Jacket","Toughness","Dexterity"],why:"Low recoil and reliable, but a slightly slower kill speed than the MSMC/Skorpion drops it a tier."},
+  {g:"bo2",name:"LSAT",cat:"LMG",tier:"S",att:["Reflex Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"Extremely accurate with near-zero recoil and a large magazine; widely called the best LMG in the game."},
+  {g:"bo2",name:"HAMR",cat:"LMG",tier:"A",att:["Reflex Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"High damage and a fire rate that tightens as you hold the trigger; very strong once controlled."},
+  {g:"bo2",name:"QBB LSW",cat:"LMG",tier:"B",att:["Reflex Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"A lighter, more mobile LMG that handles almost like an AR, but with lower damage output than the LSAT/HAMR."},
+  {g:"bo2",name:"MK48",cat:"LMG",tier:"B",att:["Reflex Sight","Quickdraw Handle"],perks:["Ghost","Toughness","Dexterity"],why:"Big damage per shot but heavy handling and recoil make it niche next to the LSAT."},
+  {g:"bo2",name:"DSR-50",cat:"Sniper Rifle",tier:"S",att:["Fast Mag","Ballistics CPU"],perks:["Ghost","Toughness","Dexterity"],why:"A one-shot kill from the waist up and the go-to quickscope rifle; Ballistics CPU + Fast Mag speed everything up."},
+  {g:"bo2",name:"Ballista",cat:"Sniper Rifle",tier:"A",att:["Fast Mag","Laser Sight"],perks:["Ghost","Toughness","Dexterity"],why:"Faster ADS and handling than the DSR (one-shot chest-up), a favourite among quickscopers."},
+  {g:"bo2",name:"XPR-50",cat:"Sniper Rifle",tier:"B",att:["Fast Mag","Variable Zoom"],perks:["Ghost","Toughness","Dexterity"],why:"A semi-automatic sniper for fast follow-up shots, but weaker one-shot potential than the bolt-actions."},
+  {g:"bo2",name:"SVU-AS",cat:"Sniper Rifle",tier:"B",att:["Fast Mag","Variable Zoom"],perks:["Ghost","Toughness","Dexterity"],why:"Semi-auto with fast handling but inconsistent one-shot kills, keeping it below the DSR/Ballista."},
+  {g:"bo2",name:"R-870 MCS",cat:"Shotgun",tier:"A",att:["Long Barrel","Laser Sight"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A reliable one-shot pump-action; Long Barrel extends the range and Laser Sight tightens the hip-fire spread."},
+  {g:"bo2",name:"KSG",cat:"Shotgun",tier:"A",att:["Laser Sight","Reflex Sight"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A slug-firing shotgun with the longest effective range; one accurate shot kills, but it demands precision."},
+  {g:"bo2",name:"Saiga-12",cat:"Shotgun",tier:"B",att:["Long Barrel","Fast Mag"],perks:["Flak Jacket","Toughness","Dexterity"],why:"Semi-automatic with fast follow-ups, trading the R-870's raw per-shot lethality."},
+  {g:"bo2",name:"M1216",cat:"Shotgun",tier:"B",att:["Long Barrel","Laser Sight"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A 16-round rotary mag lets you spray multiple targets, but weaker one-shot consistency at range."},
+  {g:"bo2",name:"KAP-40",cat:"Pistol",tier:"S",att:["Long Barrel"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A fully automatic pistol with a devastating kill speed; so overpowered it got banned from League Play."},
+  {g:"bo2",name:"Five-Seven",cat:"Pistol",tier:"A",att:["Long Barrel","Fast Mag"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A fast-firing semi-auto with a 20-round mag; a strong backup or dual-wield secondary for aggressive players."},
+  {g:"bo2",name:"Tac-45",cat:"Pistol",tier:"A",att:["Fast Mag","Long Barrel"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A hard-hitting semi-auto with a reliable two-shot kill up close — the best pure-accuracy sidearm."},
+  {g:"bo2",name:"B23R",cat:"Pistol",tier:"A",att:["Fast Mag","Laser Sight"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A 3-round burst pistol; a full burst kills up close and with Laser Sight it plays like a mini-shotgun."},
+  {g:"bo2",name:"Executioner",cat:"Pistol",tier:"B",att:["Long Barrel","Laser Sight"],perks:["Flak Jacket","Toughness","Dexterity"],why:"A revolver that fires shotgun shells; a strong point-blank one-shot but falls off fast — a close-range gimmick."}
+];
+
+// silhouettes per category (currentColor)
+const SIL={
+  "Assault Rifle":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M12 30h26v-6h58v-4h12l7-10h10v10h72v6h-16v9h-9v-9h-40v24h-13v-24h-16v7h-30v-7H12z"/><rect x="150" y="34" width="18" height="20" rx="1"/><rect x="98" y="34" width="14" height="16"/></svg>`,
+  "SMG":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M40 30h20v-6h44v-4h9l6-8h9v8h58v6h-14v8h-8v-8h-30v22h-12v-22h-14v6h-24v-6H40z"/><rect x="108" y="34" width="15" height="24" rx="1"/></svg>`,
+  "LMG":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M14 30h24v-6h60v-4h10l7-9h10v9h78v6h-18v9h-9v-9h-42v22h-13v-22h-14v7h-32v-7H14z"/><rect x="96" y="34" width="30" height="26" rx="2"/><path d="M186 46h4v16l10 4v3l-14-5zM178 46h-4v16l-10 4v3l14-5z"/></svg>`,
+  "Sniper Rifle":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M6 33h30v-4h60v-3h96v-3h58v6h-40v6h-9v-6h-70v22h-12v-22h-24v5h-30v-5H6z"/><rect x="120" y="16" width="60" height="9" rx="2"/><rect x="112" y="19" width="8" height="4"/><rect x="180" y="19" width="8" height="4"/></svg>`,
+  "Shotgun":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M16 32h30v-5h150v-4h50v6h-40v7h-9v-7H96v22h-12V29H46v7H16z"/><rect x="96" y="40" width="70" height="8" rx="2"/></svg>`,
+  "Pistol":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M92 22h84v10h-10v6h-8v-6h-30l-14 30h-14l10-22h-6v-8h-6v-8h14z"/></svg>`,
+  "Launcher":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M20 26h150v-6h30l14 8v8l-14 8h-30v-6H92l-12 22H66l8-16H50v6H20z"/><rect x="150" y="12" width="34" height="7" rx="2"/></svg>`,
+  "Special":`<svg class="__C" viewBox="0 0 260 70" fill="currentColor"><path d="M40 34h60v-4h9l8-10h10v10h74v6h-16v8h-8v-8h-40v22h-12v-22h-14v6h-30v-6H40z"/><path d="M170 24l40-10-6 12 6 12-40-10z"/></svg>`
+};
+
+// attachment pools per game
+const POOL={
+  bo1:["Reflex Sight","Red Dot Sight","ACOG Scope","Low-Power Scope","Infrared Scope","Variable Zoom","Suppressor","Grip","Rapid Fire","Dual Mag","Extended Mag","Extended Clip","Masterkey","Grenade Launcher","Flamethrower","Dual Wield","Full Auto Upgrade","Speed Reloader","Explosive Tip"],
+  bo2:["Reflex Sight","EOTech Sight","ACOG Scope","Hybrid Optic","Target Finder","MMS","Variable Zoom","Iron Sights","Suppressor","Fast Mag","Quickdraw Handle","Fore Grip","Laser Sight","Long Barrel","Rapid Fire","Select Fire","Adjustable Stock","Stock","Extended Clip","Ballistics CPU","Grenade Launcher"]
+};
+// Exacte per-wapen attachment-mogelijkheden voor BO1 (bron: cod7blackops.com)
+const AR_FULL=["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Dual Mag","Suppressor","Masterkey","Grenade Launcher","Flamethrower","Infrared Scope"];
+const SNIPER=["ACOG Sight","Extended Mag","Infrared Scope","Suppressor","Variable Zoom"];
+const BO1_ATT={
+  "M16":AR_FULL,"Enfield":AR_FULL,"FAMAS":AR_FULL,"Galil":AR_FULL,"AUG":AR_FULL,"FN FAL":AR_FULL,"AK-47":AR_FULL,"Commando":AR_FULL,
+  "M14":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Grip","Suppressor","Masterkey","Grenade Launcher","Flamethrower","Infrared Scope"],
+  "G11":["Low Power Scope","Variable Zoom"],
+  "MP5K":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Suppressor","Rapid Fire"],
+  "Skorpion":["Extended Mag","Grip","Dual Wield","Suppressor","Rapid Fire"],
+  "MAC11":["Reflex Sight","Red Dot Sight","Extended Mag","Grip","Dual Wield","Suppressor","Rapid Fire"],
+  "AK74u":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Dual Mag","Grip","Suppressor","Grenade Launcher","Rapid Fire"],
+  "Uzi":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Grip","Suppressor","Rapid Fire"],
+  "PM63":["Extended Mag","Grip","Dual Wield","Rapid Fire"],
+  "MPL":["Reflex Sight","Red Dot Sight","ACOG Sight","Dual Mag","Grip","Suppressor","Rapid Fire"],
+  "Spectre":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Grip","Suppressor","Rapid Fire"],
+  "RPK":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Dual Mag","Infrared Scope"],
+  "HK21":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Infrared Scope"],
+  "M60":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Grip","Infrared Scope"],
+  "Stoner63":["Reflex Sight","Red Dot Sight","ACOG Sight","Extended Mag","Infrared Scope"],
+  "L96A1":SNIPER,"PSG1":SNIPER,"Dragunov":SNIPER,"WA2000":SNIPER,
+  "Olympia":[],"Stakeout":["Grip"],"SPAS-12":["Suppressor"],"HS10":["Dual Wield"],
+  "M1911":["Upgraded Iron Sights","Extended Mag","Dual Wield","Suppressor"],
+  "Makarov":["Upgraded Iron Sights","Extended Mag","Dual Wield","Suppressor"],
+  "Python":["ACOG Sight","Snub Nose","Speed Reloader","Dual Wield"],
+  "CZ75":["Upgraded Iron Sights","Extended Mag","Dual Wield","Suppressor","Full Auto Upgrade"],
+  "ASP":["Dual Wield"],
+  "M72 LAW":[],"Strela-3":[],"China Lake":[],"Crossbow":[],"Ballistic Knife":[]
+};
+// beschikbare attachments voor een wapen (BO1: exact; BO2: algemene pool tot we per-wapen data hebben)
+function attFor(w){ return w.g==="bo1" ? (BO1_ATT[w.name]||[]) : POOL.bo2; }
+
+const BASE_SLOTS={bo1:1,bo2:2};
+const WILD={bo1:{label:"Warlord (2nd attachment)",max:2},bo2:{label:"Gunfighter (3rd attachment)",max:3}};
+
+const TIER_ORDER={S:0,A:1,B:2,C:3};
+const CAT_SHORT={"Assault Rifle":"AR","SMG":"SMG","LMG":"LMG","Sniper Rifle":"Sniper","Shotgun":"Shotgun","Pistol":"Pistol","Launcher":"Launcher","Special":"Special"};
+const CAT_ORDER=["Assault Rifle","SMG","LMG","Sniper Rifle","Shotgun","Pistol","Launcher","Special"];
+
+const COPY={
+  bo1:{eyebrow:"Numbers Station · Cold War Meta",title:'BLACK <span class="accent">OPS</span>',
+    lede:"The original Cold War arsenal. BO1 gives you <b>one</b> attachment per weapon by default — the <b>Warlord</b> perk unlocks a second. <b>Rapid Fire</b> is SMG-only and the meta pick. Hit <b>Edit loadout</b> to drag attachments onto a weapon yourself.",
+    note:{h:"System — BO1",p:"BO1 gives you <b>one</b> attachment per weapon by default. The <b>Warlord</b> perk (Perk 2) unlocks a <b>second</b> attachment — every dual setup here assumes it. <b>Rapid Fire</b> (~+33% fire rate) is SMG-only. Ranged classes run <b>Ghost + Sleight of Hand/Warlord + Ninja</b>; rushers run <b>Lightweight + Steady Aim + Marathon</b>."}},
+  bo2:{eyebrow:"Strike Force HUD · Pick 10 Meta",title:'BLACK OPS <span class="accent">II</span>',
+    lede:"The near-future arsenal built on the <b>Pick 10</b> system: weapons usually run 2 attachments, and the <b>Gunfighter</b> wildcard grants a 3rd. Hit <b>Edit loadout</b> to drag attachments onto a weapon yourself.",
+    note:{h:"System — BO2 · Pick 10",p:"Every item costs 1 of 10 points, so most weapons run 2 attachments. The <b>Gunfighter</b> wildcard grants a 3rd (popular on the MSMC). <b>Quickdraw</b> and <b>Fast Mag</b> are universally recommended; <b>Select Fire</b> makes the FAL OSW and M8A1 lethal. <b>Ghost</b> only hides you while moving — best on ranged/objective classes."}}
+};
+
+const PERKS={
+  bo1:[
+    {slot:1,name:"Lightweight",base:"Move faster — how much depends on your weapon's mobility. Great for run-and-gun classes.",pro:"No fall damage.",chal:["Escape death 5 times after being injured","Get 15 melee kills","Get 10 Offense Medals by killing enemies near their objective"]},
+    {slot:1,name:"Scavenger",base:"Replenish ammo and lethal grenades by walking over the blue pouches dropped by dead players (not launchers or equipment).",pro:"Doubles your starting ammo with extra magazines and also resupplies your tactical grenades.",chal:["Get 5 lethal grenade kills with a resupplied grenade","Get 5 kills without dying, 5 times","Resupply 150 times while using Scavenger"]},
+    {slot:1,name:"Ghost",base:"Undetectable by the Spy Plane while moving. You still show on radar if you fire an unsuppressed weapon.",pro:"Undetectable by aircraft, infrared and sentries; enemies don't see your name or a red crosshair when aiming at you.",chal:["Kill 20 enemies while they have a Spy Plane or Blackbird active","Destroy 30 aircraft with any non-killstreak launcher","Destroy 1 enemy Sentry Gun"]},
+    {slot:1,name:"Flak Jacket",base:"Greatly reduced explosive damage — survive almost any indirect blast.",pro:"Deflects fire damage and lets you reset the fuse of a grenade you pick up.",chal:["Plant or defuse 10 bombs in Demolition, Sabotage or Search & Destroy","Survive 10 explosions while using Flak Jacket","Throw back 5 enemy frag grenades"]},
+    {slot:1,name:"Hardline",base:"Every killstreak needs 1 less kill (e.g. Care Package from 5 to 4 kills).",pro:"Lets you re-roll a Care Package for a different or better reward.",chal:["Get 7 kills without dying in one match","Earn 7 killstreaks in one match while using Hardline","Share 10 killstreak reward crates with teammates"]},
+    {slot:2,name:"Hardened",base:"Increases your weapon's bullet penetration (does not increase damage).",pro:"Extra damage to aircraft and turrets, and less flinch when you're shot.",chal:["Shoot 200 bullets into enemy aircraft","Destroy 1 piece of enemy equipment through a wall","Get 10 kills shooting through walls while using Hardened"]},
+    {slot:2,name:"Scout",base:"Hold your breath longer when steadying a scope — a big advantage for snipers.",pro:"Swap your weapon faster.",chal:["Get 30 headshot kills","Get 50 One Shot, One Kill Medals","Get 50 kills with secondary weapons"]},
+    {slot:2,name:"Steady Aim",base:"More hip-fire accuracy and less shotgun spread. Pairs well with Dual Wield.",pro:"Aim faster after sprinting and recover faster from a knife lunge.",chal:["Get 150 hip-fire kills using Steady Aim","Melee two enemies consecutively within 5 seconds","Get 100 kills after sprinting"]},
+    {slot:2,name:"Sleight of Hand",base:"Halves your reload time — perfect for shotguns and LMGs with long reloads.",pro:"~50% faster aim-down-sight (does not work with scoped weapons).",chal:["Get 150 kills while aiming down sights","Kill an enemy within 5 seconds of reloading, 30 times","Reload and finish off the enemy you wounded, 10 times"]},
+    {slot:2,name:"Warlord",base:"Equip your primary with 2 attachments instead of 1.",pro:"Start with 1 extra lethal and tactical grenade (except smoke / Willy Pete).",chal:["Get 10 Frag or Semtex kills","Get 1 multi-kill with a Frag or Semtex","Get 150 kills using a gun with two attachments"]},
+    {slot:3,name:"Tactical Mask",base:"Protects you against Nova Gas.",pro:"Reduces the effect of flashbangs and concussions, and reveals the position of a flashed or stunned enemy.",chal:["Kill 20 enemies blinded by your Flashbang","Kill 20 enemies stunned by your Concussion grenade","Kill 20 enemies poisoned by your Nova Gas"]},
+    {slot:3,name:"Marathon",base:"Extends your sprint time (does not increase speed).",pro:"Unlimited sprint.",chal:["Sprint 26 miles using Marathon","Get the Flag Capture Medal 15 times in CTF while using Marathon","Get the First Blood Medal 10 times"]},
+    {slot:3,name:"Ninja",base:"Move, sprint and jump almost silently to sneak up on enemies.",pro:"Enemies are louder and you are completely silent.",chal:["Get 5 Backstabber Medals","Plant the bomb 10 times in Demolition, Sabotage or Search & Destroy","Get 150 kills using the Suppressor attachment"]},
+    {slot:3,name:"Second Chance",base:"Survive a lethal hit by dropping to the ground with your pistol (10 seconds or until 1 hit).",pro:"Survive a little longer and teammates can revive you (white REVIVE tag) — even players without the perk.",chal:["Get 1 headshot kill while in Second Chance","Get 10 kills while in Second Chance","Kill the enemy who downed you 5 times while in Second Chance"]},
+    {slot:3,name:"Hacker",base:"See enemy explosives, equipment and Tactical Insertions (highlighted red).",pro:"Sabotage enemy Care Packages, turn enemy equipment friendly and become invisible to Motion Sensors.",chal:["Destroy 10 equipment or explosives while using Hacker","Kill 25 enemies with a Claymore or C4","Kill 25 enemies within the radius of your Jammer or Motion Sensor"]}
+  ],
+  bo2:[
+    {slot:1,name:"Ghost",base:"Undetectable by enemy UAV while moving. Standing still, camping or firing unsuppressed makes you visible.",pro:null},
+    {slot:1,name:"Lightweight",base:"Move faster and take no fall damage.",pro:null},
+    {slot:1,name:"Flak Jacket",base:"Greatly reduced explosive and fire damage.",pro:null},
+    {slot:1,name:"Blind Eye",base:"Undetectable by AI-controlled scorestreaks and turrets; your weapons deal extra damage to streaks.",pro:null},
+    {slot:1,name:"Hardline",base:"Your scorestreaks require 1 less kill or point.",pro:null},
+    {slot:2,name:"Toughness",base:"Significantly less flinch when shot while aiming.",pro:null},
+    {slot:2,name:"Cold Blooded",base:"Undetectable by Target Finders, Dual Band scopes, turrets and AI streaks; no name or red crosshair.",pro:null},
+    {slot:2,name:"Scavenger",base:"Resupply your ammo from fallen enemies.",pro:null},
+    {slot:2,name:"Fast Hands",base:"Swap weapons faster, swap grenades faster and use equipment faster.",pro:null},
+    {slot:2,name:"Hard Wired",base:"Immune to Counter-UAV and EMP, and resistant to Scramblers.",pro:null},
+    {slot:3,name:"Dexterity",base:"Aim faster after sprinting or mantling, steadier aim and less fall damage.",pro:null},
+    {slot:3,name:"Dead Silence",base:"Move almost silently.",pro:null},
+    {slot:3,name:"Engineer",base:"See enemy equipment and streaks (red), reprogram or booby-trap them and re-roll care packages.",pro:null},
+    {slot:3,name:"Extreme Conditioning",base:"Sprint for significantly longer.",pro:null},
+    {slot:3,name:"Tactical Mask",base:"Reduces the effect of flashbangs, concussions, shock charges and gas.",pro:null},
+    {slot:3,name:"Awareness",base:"Enemy movement sounds are louder.",pro:null}
+  ]
+};
+
+let state={game:"bo1",mode:"weapons",cat:"all",q:""};
+const app=document.getElementById("app"),grid=document.getElementById("grid"),catsEl=document.getElementById("cats"),countEl=document.getElementById("count");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const imgPath=w=>`assets/weapons/${w.g}/${slug(w.name)}.png`;
+
+// custom loadouts store
+const META_AUTHOR="Community Meta";
+let CUSTOM={};
+try{CUSTOM=JSON.parse(localStorage.getItem("bo-loadouts")||"{}")}catch(e){CUSTOM={}}
+// migreer oud array-formaat -> object
+for(const k in CUSTOM){if(Array.isArray(CUSTOM[k]))CUSTOM[k]={att:CUSTOM[k],perks:null,author:"Onbekend",title:"Eigen loadout"};}
+const keyOf=w=>w.g+":"+w.name;
+const saveStore=()=>{try{localStorage.setItem("bo-loadouts",JSON.stringify(CUSTOM))}catch(e){}};
+const entryOf=w=>CUSTOM[keyOf(w)]||null;
+const loadoutAtt=w=>{const e=entryOf(w);return e&&e.att?e.att:w.att;};
+const loadoutPerks=w=>{const e=entryOf(w);return e&&e.perks&&e.perks.length?e.perks:w.perks;};
+const loadoutAuthor=w=>{const e=entryOf(w);return e?e.author:META_AUTHOR;};
+const loadoutTitle=w=>{const e=entryOf(w);return e?e.title:"Meta loadout";};
+const isCustom=w=>!!entryOf(w);
+
+// numbers backdrop
+(function(){let out="";for(let r=0;r<40;r++){let l="";for(let c=0;c<60;c++)l+=Math.floor(Math.random()*10)+" ";out+=l+"\n";}document.getElementById("numbers").textContent=out;})();
+
+function buildCats(){
+  let opts;
+  if(state.mode==="perks"){
+    document.getElementById("filterLabel").textContent="Perk slot";
+    opts=[["all","All"],["1","Slot 1"],["2","Slot 2"],["3","Slot 3"]];
+  }else{
+    document.getElementById("filterLabel").textContent="Category";
+    const present=CAT_ORDER.filter(c=>WEAPONS.some(w=>w.g===state.game&&w.cat===c));
+    opts=[["all","All"]].concat(present.map(c=>[c,CAT_SHORT[c]]));
+  }
+  catsEl.innerHTML="";
+  opts.forEach(([val,label])=>{
+    const b=document.createElement("button");b.className="chip";b.textContent=label;b.dataset.cat=val;
+    b.setAttribute("aria-pressed",val===state.cat);
+    b.onclick=()=>{state.cat=val;[...catsEl.children].forEach(c=>c.setAttribute("aria-pressed",c.dataset.cat===val));render();};
+    catsEl.appendChild(b);
+  });
+}
+
+function setGame(g){
+  state.game=g;state.cat="all";app.dataset.active=g;
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.g===g));
+  const c=COPY[g];
+  document.getElementById("eyebrow").textContent=c.eyebrow;
+  document.getElementById("title").innerHTML=c.title;
+  document.getElementById("lede").innerHTML=c.lede;
+  updateSysnote();
+  buildCats();render();
+}
+
+let VIEW=[];
+function render(){
+  if(state.mode==="perks")return renderPerks();
+  VIEW=WEAPONS.filter(w=>{
+    if(w.g!==state.game)return false;
+    if(state.cat!=="all"&&w.cat!==state.cat)return false;
+    if(state.q){const hay=(w.name+" "+w.cat+" "+loadoutAtt(w).join(" ")+" "+loadoutPerks(w).join(" ")+" "+loadoutAuthor(w)+" "+w.tier).toLowerCase();if(!hay.includes(state.q))return false;}
+    return true;
+  });
+  VIEW.sort((a,b)=>TIER_ORDER[a.tier]-TIER_ORDER[b.tier]||a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
+  const total=WEAPONS.filter(w=>w.g===state.game).length;
+  countEl.innerHTML=`<b>${VIEW.length}</b>/${total}`;
+  if(!VIEW.length){grid.innerHTML=`<div class="empty">// No weapons found — adjust your filters.</div>`;return;}
+  grid.innerHTML=VIEW.map((w,i)=>{
+    const att=loadoutAtt(w),perks=loadoutPerks(w),mine=isCustom(w);
+    return `<article class="card ${w.tier.toLowerCase()}">
+      <div class="plate"><div class="grid-tex"></div><div class="sil-wrap">${SIL[w.cat]||SIL["Special"]}</div><img class="wimg" src="${imgPath(w)}" alt="${esc(w.name)}" loading="lazy" onload="this.parentElement.classList.add('has-img');this.previousElementSibling.style.display='none'" onerror="this.remove()"></div>
+      <div class="body">
+        <div class="c-top">
+          <div><h2 class="c-name">${esc(w.name)}</h2><div class="c-cat"><span class="dot"></span>${esc(w.cat)}</div></div>
+          <div class="tier" title="Tier ${w.tier}">${w.tier}<small>TIER</small></div>
+        </div>
+        <div class="block">
+          <div class="b-label">${mine?esc(loadoutTitle(w)):"Recommended attachments"}${mine?'<span class="mine">YOURS</span>':""}</div>
+          <div class="tags">${att.length?att.map(a=>`<span class="tag att">${esc(a)}</span>`).join(""):`<span class="tag" style="opacity:.6">No attachments</span>`}</div>
+        </div>
+        <div class="block">
+          <div class="b-label">Loadout · Perks</div>
+          <div class="tags">${perks.map(p=>`<span class="tag perk">${esc(p)}</span>`).join("")}</div>
+        </div>
+        <p class="reason">${esc(w.why)}</p>
+        <div class="byline">◇ ${mine?"by "+esc(loadoutAuthor(w)):"Meta · "+esc(META_AUTHOR)}</div>
+        <button class="edit-btn" data-idx="${i}">⚙ Edit loadout</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+function renderPerks(){
+  let list=PERKS[state.game].filter(p=>{
+    if(state.cat!=="all"&&String(p.slot)!==state.cat)return false;
+    if(state.q){const hay=(p.name+" "+p.base+" "+(p.pro||"")).toLowerCase();if(!hay.includes(state.q))return false;}
+    return true;
+  });
+  list.sort((a,b)=>a.slot-b.slot||a.name.localeCompare(b.name));
+  const total=PERKS[state.game].length;
+  countEl.innerHTML=`<b>${list.length}</b>/${total}`;
+  if(!list.length){grid.innerHTML=`<div class="empty">// No perks found.</div>`;return;}
+  grid.innerHTML=list.map(p=>`
+    <article class="card pcard slot${p.slot}">
+      <div class="body">
+        <div class="c-top">
+          <div><h2 class="c-name">${esc(p.name)}</h2><div class="c-cat"><span class="dot"></span>Perk Slot ${p.slot}</div></div>
+          <div class="slot-badge" title="Perk Slot ${p.slot}">${p.slot}</div>
+        </div>
+        <div class="block"><div class="b-label">Ability</div><p class="reason">${esc(p.base)}</p></div>
+        ${p.pro
+          ?`<div class="block"><div class="b-label pro-label">◆ Pro Ability</div><div class="pro-block"><p class="reason" style="margin:0 0 11px">${esc(p.pro)}</p><div class="chal-label">Pro challenges — complete all to unlock</div><ul class="chal">${p.chal.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div></div>`
+          :`<div class="block"><div class="b-label">Pro</div><div class="nopro">Black Ops 2 has no Pro perks — this perk has a single effect.</div></div>`}
+      </div>
+    </article>`).join("");
+}
+
+function updateSysnote(){
+  const el=document.getElementById("sysnote"),c=COPY[state.game];
+  if(state.mode==="perks"){
+    el.innerHTML=state.game==="bo1"
+      ? `<h3>Pro Perks — BO1</h3><p>Each perk gains a <b>second effect (Pro)</b> once you complete its in-game challenges. Every tile below shows the base ability plus the Pro ability and how to unlock it.</p>`
+      : `<h3>Perks — BO2</h3><p>Black Ops 2 has <b>no Pro perks</b>: each perk has a single fixed effect. Use the <b>Perk Greed</b> wildcard to run two perks in the same slot.</p>`;
+  }else{
+    el.innerHTML=`<h3>${c.note.h}</h3><p>${c.note.p}</p>`;
+  }
+}
+
+grid.addEventListener("click",e=>{const b=e.target.closest(".edit-btn");if(b)openBuilder(VIEW[+b.dataset.idx]);});
+
+/* ===== BUILDER ===== */
+const overlay=document.getElementById("overlay");
+let BW=null,BSLOTS=[],BPERKS=[],BMAX=1,BWILD=false;
+
+function openBuilder(w){
+  BW=w;BWILD=false;BMAX=BASE_SLOTS[w.g];
+  const avail=attFor(w);
+  BSLOTS=loadoutAtt(w).filter(a=>avail.includes(a)).slice(0,WILD[w.g].max);
+  if(BSLOTS.length>BASE_SLOTS[w.g]){BWILD=true;BMAX=WILD[w.g].max;}
+  BPERKS=loadoutPerks(w).slice();
+  document.getElementById("mTitle").textContent=w.name;
+  document.getElementById("mSub").textContent=w.cat+" · "+(w.g==="bo1"?"Black Ops":"Black Ops II");
+  document.getElementById("authorLine").innerHTML=`Created by <b>${esc(loadoutAuthor(w))}</b> · <span>${esc(loadoutTitle(w))}</span>`;
+  document.getElementById("bzSil").innerHTML=(SIL[w.cat]||SIL["Special"]).replace('class="__C"','class="bz-sil"')+`<img class="bz-img" src="${imgPath(w)}" alt="" onload="this.previousElementSibling.style.display='none'" onerror="this.remove()">`;
+  document.getElementById("mHint").innerHTML=w.g==="bo1"
+    ? "BO1: 1 attachment by default. Enable <b>Warlord</b> for a 2nd slot. Drag an attachment onto a slot, or tap it. Tap a filled slot to remove it."
+    : "BO2 · Pick 10: 2 attachments by default. Enable <b>Gunfighter</b> for a 3rd slot. Drag an attachment onto a slot, or tap it. Tap a filled slot to remove it.";
+  document.getElementById("saveForm").hidden=true;document.getElementById("mActions").hidden=false;
+  document.getElementById("uName").value="";document.getElementById("uTitle").value="";document.getElementById("sfErr").textContent="";
+  renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
+  overlay.classList.add("open");
+}
+function closeBuilder(){overlay.classList.remove("open");BW=null;}
+
+function renderWild(){
+  const w=WILD[BW.g],row=document.getElementById("wildRow");
+  if(attFor(BW).length===0){row.innerHTML=`<span style="color:var(--ink-3)">This weapon has no attachments.</span>`;return;}
+  row.innerHTML=`<span>Wildcard:</span><button id="wildBtn" aria-pressed="${BWILD}">${esc(w.label)}</button><span style="color:var(--ink-3)">Slots: ${BMAX}</span>`;
+  document.getElementById("wildBtn").onclick=()=>{
+    BWILD=!BWILD;BMAX=BWILD?WILD[BW.g].max:BASE_SLOTS[BW.g];
+    if(BSLOTS.length>BMAX)BSLOTS=BSLOTS.slice(0,BMAX);
+    renderWild();renderSlots();renderPalette();
+  };
+}
+function renderSlots(){
+  const el=document.getElementById("slots");el.innerHTML="";
+  if(attFor(BW).length===0){el.innerHTML=`<div class="slot" style="cursor:default;max-width:none">No attachments for this weapon</div>`;return;}
+  for(let i=0;i<BMAX;i++){
+    const val=BSLOTS[i];const d=document.createElement("div");
+    d.className="slot"+(val?" filled":"");d.dataset.i=i;
+    d.innerHTML=val?`<span>${esc(val)}</span><span class="rm">✕</span>`:`Drop here…`;
+    if(val)d.onclick=()=>{BSLOTS.splice(i,1);renderSlots();renderPalette();};
+    d.addEventListener("dragover",ev=>{ev.preventDefault();d.classList.add("drop");});
+    d.addEventListener("dragleave",()=>d.classList.remove("drop"));
+    d.addEventListener("drop",ev=>{ev.preventDefault();d.classList.remove("drop");addAtt(ev.dataTransfer.getData("text/plain"),i);});
+    el.appendChild(d);
+  }
+}
+function addAtt(name,slotIdx){
+  if(!name||BSLOTS.includes(name)||!attFor(BW).includes(name))return;
+  if(typeof slotIdx==="number"&&slotIdx<BMAX){BSLOTS[slotIdx]=name;}
+  else if(BSLOTS.length<BMAX){BSLOTS.push(name);}
+  else return;
+  renderSlots();renderPalette();
+}
+function renderPalette(){
+  const el=document.getElementById("palette");el.innerHTML="";
+  const avail=attFor(BW);
+  if(!avail.length){el.innerHTML=`<span style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">— none —</span>`;return;}
+  avail.forEach(name=>{
+    const it=document.createElement("div");
+    it.className="palitem"+(BSLOTS.includes(name)?" used":"");
+    it.textContent=name;it.draggable=true;
+    it.addEventListener("dragstart",ev=>ev.dataTransfer.setData("text/plain",name));
+    it.onclick=()=>addAtt(name);
+    el.appendChild(it);
+  });
+}
+function perkBySlot(s){return BPERKS.find(p=>{const pk=PERKS[BW.g].find(x=>x.name===p);return pk&&pk.slot===s;});}
+function renderPerkSlots(){
+  const el=document.getElementById("pslots");el.innerHTML="";
+  for(let s=1;s<=3;s++){
+    const val=perkBySlot(s);const d=document.createElement("div");
+    d.className="slot"+(val?" filled":"");
+    d.innerHTML=val?`<span>${esc(val)}</span><span class="rm">✕</span>`:`Perk ${s}`;
+    if(val)d.onclick=()=>{BPERKS=BPERKS.filter(p=>p!==val);renderPerkSlots();renderPerkPalette();};
+    d.addEventListener("dragover",ev=>{ev.preventDefault();d.classList.add("drop");});
+    d.addEventListener("dragleave",()=>d.classList.remove("drop"));
+    d.addEventListener("drop",ev=>{ev.preventDefault();d.classList.remove("drop");addPerk(ev.dataTransfer.getData("text/plain"));});
+    el.appendChild(d);
+  }
+}
+function addPerk(name){
+  const pk=PERKS[BW.g].find(x=>x.name===name);if(!pk)return;
+  BPERKS=BPERKS.filter(p=>{const q=PERKS[BW.g].find(x=>x.name===p);return q&&q.slot!==pk.slot;});
+  BPERKS.push(name);renderPerkSlots();renderPerkPalette();
+}
+function renderPerkPalette(){
+  const el=document.getElementById("ppalette");el.innerHTML="";
+  PERKS[BW.g].forEach(pk=>{
+    const it=document.createElement("div");
+    it.className="palitem"+(BPERKS.includes(pk.name)?" used":"");
+    it.textContent=pk.name+" · "+pk.slot;it.draggable=true;
+    it.addEventListener("dragstart",ev=>ev.dataTransfer.setData("text/plain",pk.name));
+    it.onclick=()=>addPerk(pk.name);
+    el.appendChild(it);
+  });
+}
+document.getElementById("mSave").onclick=()=>{document.getElementById("mActions").hidden=true;document.getElementById("saveForm").hidden=false;document.getElementById("uName").focus();};
+document.getElementById("mCancelSave").onclick=()=>{document.getElementById("saveForm").hidden=true;document.getElementById("mActions").hidden=false;};
+document.getElementById("mConfirmSave").onclick=()=>{
+  const name=document.getElementById("uName").value.trim(),title=document.getElementById("uTitle").value.trim();
+  if(!name||!title){document.getElementById("sfErr").textContent="Please enter both your name and a loadout title.";return;}
+  CUSTOM[keyOf(BW)]={att:BSLOTS.slice(),perks:BPERKS.slice(),author:name,title:title};
+  saveStore();closeBuilder();render();
+};
+document.getElementById("mReset").onclick=()=>{BSLOTS=[];BPERKS=[];renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();};
+document.getElementById("mRecommend").onclick=()=>{
+  const avail=attFor(BW);
+  BSLOTS=BW.att.filter(a=>avail.includes(a)).slice(0,WILD[BW.g].max);
+  if(BSLOTS.length>BASE_SLOTS[BW.g]){BWILD=true;BMAX=WILD[BW.g].max;}else{BWILD=false;BMAX=BASE_SLOTS[BW.g];}
+  if(BSLOTS.length>BMAX)BSLOTS=BSLOTS.slice(0,BMAX);
+  BPERKS=BW.perks.slice();
+  renderWild();renderSlots();renderPalette();renderPerkSlots();renderPerkPalette();
+};
+document.getElementById("mClose").onclick=closeBuilder;
+overlay.addEventListener("click",e=>{if(e.target===overlay)closeBuilder();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("open"))closeBuilder();});
+
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setGame(t.dataset.g));
+document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{
+  state.mode=b.dataset.m;state.cat="all";
+  document.querySelectorAll("#modeSeg button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  document.getElementById("q").placeholder=state.mode==="perks"?"Search perk or effect…":"Search weapon, attachment or perk…";
+  updateSysnote();buildCats();render();
+});
+document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.toLowerCase().trim();render();});
+
+setGame("bo1");
+</script>
+</body>
+</html>
