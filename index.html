@@ -49,6 +49,9 @@
   .tab .t-name{display:block;font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:clamp(20px,3.4vw,34px);line-height:.9}
   .tab .t-sub{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;margin-top:6px;opacity:.7;text-transform:uppercase}
   .tab[aria-selected="true"]{color:var(--ink)}
+  .tab.soon{cursor:not-allowed}
+  .tab.soon .t-name,.tab.soon .t-code{opacity:.42}
+  .tab.soon .t-sub{color:var(--accent);opacity:1;letter-spacing:.22em}
   .app[data-active="bo1"] .tab[data-g="bo1"]{background:linear-gradient(180deg,#1c1e15,#111309);border-color:var(--line-2);box-shadow:inset 0 0 30px rgba(0,0,0,.5),0 -2px 0 var(--accent)}
   .app[data-active="bo1"] .tab[data-g="bo1"] .t-code{color:var(--accent)}
   .app[data-active="bo1"] .tab[data-g="bo1"] .t-name{text-shadow:0 1px 0 rgba(0,0,0,.6)}
@@ -79,7 +82,7 @@
   /* deck */
   .deck{position:relative;z-index:3;margin:16px 0 22px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 92%,transparent);padding:14px}
   .app[data-active="bo2"] .deck{clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px))}
-  .deck-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center;justify-content:center}
+  .deck-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
   .deck-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);min-width:78px}
   .chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line-2);padding:7px 13px;cursor:pointer;transition:.15s;text-transform:uppercase}
   .chip:hover{color:var(--ink);border-color:var(--ink-3)}
@@ -287,8 +290,8 @@
     <button class="tab" data-g="bo1" role="tab" aria-selected="true">
       <span class="t-code">// 2010 · TREYARCH</span><span class="t-name">Black Ops</span><span class="t-sub">Cold War Arsenal</span>
     </button>
-    <button class="tab" data-g="bo2" role="tab" aria-selected="false">
-      <span class="t-code">// 2025 · STRIKE FORCE</span><span class="t-name">Black Ops II</span><span class="t-sub">Future Warfare Arsenal</span>
+    <button class="tab soon" data-g="bo2" role="tab" aria-selected="false" disabled aria-disabled="true">
+      <span class="t-code">// 2025 · STRIKE FORCE</span><span class="t-name">Black Ops II</span><span class="t-sub">Coming soon</span>
     </button>
   </nav>
 
@@ -884,7 +887,7 @@ document.getElementById("mClose").onclick=closeBuilder;
 overlay.addEventListener("click",e=>{if(e.target===overlay)closeBuilder();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("open"))closeBuilder();});
 
-document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setGame(t.dataset.g));
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{if(t.disabled)return;setGame(t.dataset.g);});
 document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{
   state.mode=b.dataset.m;state.cat="all";
   document.querySelectorAll("#modeSeg button").forEach(x=>x.setAttribute("aria-pressed",x===b));
