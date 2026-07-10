@@ -686,7 +686,7 @@ function openBuilder(w){
   document.getElementById("mSub").textContent=w.cat+" · "+(w.g==="bo1"?"Black Ops":"Black Ops II");
   document.getElementById("authorLine").innerHTML=`Meta loadout · created by <b>${esc(META_AUTHOR)}</b>`;
   {const mb=document.getElementById("myBuildBar"),e=entryOf(w);
-   if(e){mb.hidden=false;mb.innerHTML=`<span>You have a saved build: <b>${esc(e.title)}</b> by ${esc(e.author)}</span><button id="loadMine">Load my build</button>`;}
+   if(e){mb.hidden=false;mb.innerHTML=`<span>You have a saved build: <b>${esc(e.title)}</b> by ${esc(e.author)}</span><button id="loadMine">Show build</button>`;}
    else{mb.hidden=true;mb.innerHTML="";}}
   document.getElementById("bzSil").innerHTML=(SIL[w.cat]||SIL["Special"]).replace('class="__C"','class="bz-sil"')+`<img class="bz-img" src="${imgPath(w)}" alt="" onload="this.previousElementSibling.style.display='none'" onerror="this.remove()">`;
   document.getElementById("mHint").innerHTML=w.g==="bo1"
