@@ -757,7 +757,7 @@ function renderCommunity(){
   el.innerHTML=list.map((b,i)=>`
     <div class="cbuild">
       <div class="cbuild-head">
-        <button class="cvote${hasVoted(b.id)?" voted":""}" data-i="${i}" title="Upvote if this build is good">▲ <span>${b.votes||0}</span></button>
+        <button class="cvote${hasVoted(b.id)?" voted":""}" data-i="${i}" title="Upvote if this build is good">👍 <span>${b.votes||0}</span></button>
         <span class="author-name">${esc(b.author)}</span> · <b>${esc(b.title)}</b>
         <button class="cbuild-show" data-i="${i}">Show build</button>
       </div>
